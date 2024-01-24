@@ -17,7 +17,6 @@ td, tr, th, table, thead, tbody {
   margin: auto;
 }
 
-
 tbody > tr:nth-child(odd) {
   background-color: #222020;
 }
@@ -26,38 +25,11 @@ tbody > tr:nth-child(even) {
   background-color: #333333;
 }
 
-thead > tr > th:nth-child(3),
-tbody > tr > td:nth-child(3) {
+.current-day {
   border-left: solid 1px #ffffff;
   border-right: solid 1px #ffffff;
 }
 
-/*
-main {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  height: 90vh;
+.current-time {
+  border: solid 1px #ffffff;
 }
-
-h2 {
-  text-align: center;
-  height: 10%;
-}
-
-main > section {
-  width: 100%;
-}
-
-main > section > section:nth-child(odd) {
-  background-color: #222020;
-}
-
-main > section > section:nth-child(even) {
-  background-color: #333333;
-}
-
-.hour {
-  height: 10%;
-  background-color: blue;
-}*/

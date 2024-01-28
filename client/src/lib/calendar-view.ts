@@ -34,7 +34,9 @@ function table(calendar: Calendar) {
               }
               return `<td ${
                 classes.length ? `class="${classes.join(' ')}"` : ''
-              }></td>`;
+              }>${day.hours[hourIndex].events
+                .map((e) => e.summary)
+                .join(' ')}</td>`;
             })
             .join('')}
         </tr>`

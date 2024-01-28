@@ -1,8 +1,10 @@
+import {Temporal} from '@js-temporal/polyfill';
+
 export interface Events {
   events: Event[];
 }
 
-export interface Event {
+export interface SerialisedEvent {
   uid: string;
   summary: string;
   timestamp: number;
@@ -10,7 +12,15 @@ export interface Event {
   end: string;
 }
 
-interface WeekDay {
+export interface Event {
+  uid: string;
+  summary: string;
+  timestamp: number;
+  start: Temporal.Instant;
+  end: Temporal.Instant;
+}
+
+export interface WeekDay {
   highlight: boolean;
   name: string;
   hours: Hour[];
@@ -18,7 +28,7 @@ interface WeekDay {
 
 interface Hour {
   highlight: boolean;
-  name: string;
+  events: Event[];
 }
 
 export interface Calendar {

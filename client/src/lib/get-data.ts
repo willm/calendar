@@ -1,7 +1,7 @@
 import {Temporal} from '@js-temporal/polyfill';
 import {days, months} from './constants.js';
 import {connect} from './event-db.js';
-import {Calendar} from './model.js';
+import {Calendar, WeekDay} from './model.js';
 
 export async function getData(): Promise<Calendar> {
   const db = await connect();
@@ -9,15 +9,13 @@ export async function getData(): Promise<Calendar> {
   const n = Temporal.Now;
   const now = n.plainDateISO();
 
-  const sundayTimestamp = Temporal.Instant.from(
+  const sunday = Temporal.Instant.from(
     now.subtract({days: now.dayOfWeek}).toZonedDateTime('UTC').toInstant()
-  ).epochMilliseconds;
+  );
+  const sundayTimestamp = sunday.epochMilliseconds;
 
   const saturdayTimestamp = Temporal.Instant.from(
-    now
-      .subtract({days: now.dayOfWeek - 6})
-      .toZonedDateTime('UTC')
-      .toInstant()
+    now.add({days: 6}).toZonedDateTime('UTC').toInstant()
   ).epochMilliseconds;
 
   const events = (
@@ -29,23 +27,36 @@ export async function getData(): Promise<Calendar> {
       end: Temporal.Instant.from(e.end),
     };
   });
-  console.log(events);
 
   const dayOfMonth = now.toPlainMonthDay().day;
   const dayOfWeek = days[now.dayOfWeek % 7];
   return {
-    weekDays: days.map((day, i) => {
+    weekDays: days.map((day, i): WeekDay => {
       const highlightDay = (now.dayOfWeek % 7) - i === 0;
+      const currentDay = now.subtract({days: (now.dayOfWeek % 7) - i});
+
       return {
         highlight: highlightDay,
-        name:
-          day +
-          ' ' +
-          now.subtract({days: (now.dayOfWeek % 7) - i}).toPlainMonthDay().day,
-        hours: Array.from({length: 24}, (_, i) => ({
-          name: '',
-          highlight: highlightDay && i === new Date().getHours(),
-        })),
+        name: `${day} ${
+          now.subtract({days: (now.dayOfWeek % 7) - i}).toPlainMonthDay().day
+        }`,
+        hours: Array.from({length: 24}, (_, i) => {
+          const hourEvents = events.filter((event) => {
+            const eventStart = event.start.toZonedDateTimeISO('UTC');
+            const eventEnd = event.end.toZonedDateTimeISO('UTC');
+            return (
+              eventStart.day === currentDay.day &&
+              eventStart.year === currentDay.year &&
+              eventStart.month === currentDay.month &&
+              eventStart.hour <= i &&
+              eventEnd.hour > i
+            );
+          });
+          return {
+            highlight: highlightDay && i === new Date().getHours(),
+            events: hourEvents,
+          };
+        }),
       };
     }),
     dayOfWeek,

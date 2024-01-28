@@ -1,8 +1,9 @@
 import {Temporal} from '@js-temporal/polyfill';
 import {days, months} from './constants.js';
 import {connect} from './event-db.js';
+import {Calendar} from './model.js';
 
-export async function getData() {
+export async function getData(): Promise<Calendar> {
   const db = await connect();
 
   const n = Temporal.Now;
@@ -31,15 +32,15 @@ export async function getData() {
   console.log(events);
 
   const dayOfMonth = now.toPlainMonthDay().day;
-  const dayOfWeek = days[now.dayOfWeek];
+  const dayOfWeek = days[now.dayOfWeek % 7];
   return {
     weekDays: days.map((day, i) => {
       return {
-        highlight: now.dayOfWeek - i === 0,
+        highlight: (now.dayOfWeek % 7) - i === 0,
         name:
           day +
           ' ' +
-          now.subtract({days: now.dayOfWeek - i}).toPlainMonthDay().day,
+          now.subtract({days: (now.dayOfWeek % 7) - i}).toPlainMonthDay().day,
       };
     }),
     dayOfWeek,

@@ -1,7 +1,8 @@
+import {Event} from './model';
 const storeName = 'calendar';
 const timestampIndex = 'timestamp-idx';
 
-export async function connect() {
+export async function connect(): Promise<EventDb> {
   return new Promise((resolve, reject) => {
     const openRequest = indexedDB.open('calendar-store', 1);
 
@@ -25,12 +26,12 @@ export async function connect() {
 }
 
 class EventDb {
-  #db;
-  constructor(db) {
+  #db: IDBDatabase;
+  constructor(db: IDBDatabase) {
     this.#db = db;
   }
 
-  async saveEvent(event) {
+  async saveEvent(event: Event): Promise<void> {
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(storeName, 'readwrite');
       const events = transaction.objectStore(storeName);
@@ -44,7 +45,7 @@ class EventDb {
     });
   }
 
-  async getEventsBetween(start, end) {
+  async getEventsBetween(start: number, end: number): Promise<Event[]> {
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(storeName);
       const events = transaction.objectStore(storeName);

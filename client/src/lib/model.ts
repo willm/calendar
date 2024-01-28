@@ -13,6 +13,7 @@ export interface Event {
 interface WeekDay {
   highlight: boolean;
   name: string;
+  hours: Hour[];
 }
 
 interface Hour {
@@ -26,5 +27,4 @@ export interface Calendar {
   dayOfMonth: number;
   month: string;
   year: number;
-  hours: Hour[];
 }

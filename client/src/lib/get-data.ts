@@ -35,21 +35,22 @@ export async function getData(): Promise<Calendar> {
   const dayOfWeek = days[now.dayOfWeek % 7];
   return {
     weekDays: days.map((day, i) => {
+      const highlightDay = (now.dayOfWeek % 7) - i === 0;
       return {
-        highlight: (now.dayOfWeek % 7) - i === 0,
+        highlight: highlightDay,
         name:
           day +
           ' ' +
           now.subtract({days: (now.dayOfWeek % 7) - i}).toPlainMonthDay().day,
+        hours: Array.from({length: 24}, (_, i) => ({
+          name: '',
+          highlight: highlightDay && i === new Date().getHours(),
+        })),
       };
     }),
     dayOfWeek,
     month: months[now.month - 1],
     dayOfMonth,
     year: now.year,
-    hours: Array.from({length: 24}, (_, i) => ({
-      name: i.toString().padStart(2, '0') + ':00',
-      highlight: i === new Date().getHours(),
-    })),
   };
 }

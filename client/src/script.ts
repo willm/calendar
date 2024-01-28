@@ -33,7 +33,7 @@ function registerAddCalendarButton() {
 async function main() {
   registerAddCalendarButton();
   renderCalendar(await getData());
-  setInterval(async () => renderCalendar(await getData()), 100000);
+  setInterval(async () => renderCalendar(await getData()), 10000);
 }
 
 main();

@@ -1,5 +1,9 @@
 import {Calendar} from './model';
 
+function formatHour(hourIndex: number): string {
+  return hourIndex.toString().padStart(2, '0') + ':00';
+}
+
 function table(calendar: Calendar) {
   return `<table>
     <thead>
@@ -15,17 +19,17 @@ function table(calendar: Calendar) {
       </tr>
     </thead>
     <tbody>
-      ${calendar.hours
+      ${calendar.weekDays[0].hours
         .map(
-          (hour) => `<tr>
-          <td>${hour.name}</td>
+          (_hour, hourIndex) => `<tr>
+          <td>${formatHour(hourIndex)}</td>
           ${calendar.weekDays
             .map((day) => {
               let classes = [];
               if (day.highlight) {
                 classes.push('current-day');
               }
-              if (day.highlight && hour.highlight) {
+              if (day.hours[hourIndex].highlight) {
                 classes.push('current-time');
               }
               return `<td ${

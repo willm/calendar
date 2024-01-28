@@ -25,18 +25,17 @@ function table(calendar: Calendar) {
           <td>${formatHour(hourIndex)}</td>
           ${calendar.weekDays
             .map((day) => {
+              let hour = day.hours[hourIndex];
               let classes = [];
               if (day.highlight) {
                 classes.push('current-day');
               }
-              if (day.hours[hourIndex].highlight) {
+              if (hour.highlight) {
                 classes.push('current-time');
               }
               return `<td ${
                 classes.length ? `class="${classes.join(' ')}"` : ''
-              }>${day.hours[hourIndex].events
-                .map((e) => e.summary)
-                .join(' ')}</td>`;
+              }>${hour.events.map((e) => e.summary).join(' ')}</td>`;
             })
             .join('')}
         </tr>`

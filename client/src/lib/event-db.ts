@@ -1,16 +1,21 @@
-import {Event} from './model';
-const storeName = 'calendar';
+import {Calendar, Event, RemoteCalendar, SerialisedEvent} from './model';
+const eventStoreName = 'events';
+const dbName = 'calendar';
+const calendarStoreName = 'calendar';
 const timestampIndex = 'timestamp-idx';
 
-export async function connect(): Promise<EventDb> {
+export async function connect(): Promise<EventStore> {
   return new Promise((resolve, reject) => {
-    const openRequest = indexedDB.open('calendar-store', 1);
+    const openRequest = indexedDB.open(dbName, 1);
 
     openRequest.onupgradeneeded = function () {
       const db = openRequest.result;
-      if (!db.objectStoreNames.contains(storeName)) {
-        const store = db.createObjectStore(storeName, {keyPath: 'uid'});
+      if (!db.objectStoreNames.contains(eventStoreName)) {
+        const store = db.createObjectStore(eventStoreName, {keyPath: 'uid'});
         store.createIndex(timestampIndex, 'timestamp');
+      }
+      if (!db.objectStoreNames.contains(calendarStoreName)) {
+        db.createObjectStore(calendarStoreName, {keyPath: 'uid'});
       }
     };
 
@@ -20,35 +25,60 @@ export async function connect(): Promise<EventDb> {
 
     openRequest.onsuccess = function () {
       const db = openRequest.result;
-      resolve(new EventDb(db));
+      resolve(new EventStore(db));
     };
   });
 }
 
-class EventDb {
+class EventStore {
   #db: IDBDatabase;
   constructor(db: IDBDatabase) {
     this.#db = db;
   }
 
-  async saveEvent(event: Event): Promise<void> {
+  async #save<T>(storeName: string, entity: T): Promise<void> {
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(storeName, 'readwrite');
-      const events = transaction.objectStore(storeName);
-      const request = events.put(event);
+      const entities = transaction.objectStore(storeName);
+      const request = entities.put(entity);
       request.onsuccess = () => {
         resolve();
       };
       request.onerror = () => {
-        reject(new Error('Failed to save events'));
+        reject(new Error('Failed to save entity'));
       };
     });
   }
 
-  async getEventsBetween(start: number, end: number): Promise<Event[]> {
+  async getCalendars(): Promise<RemoteCalendar[]> {
     return new Promise((resolve, reject) => {
-      const transaction = this.#db.transaction(storeName);
-      const events = transaction.objectStore(storeName);
+      const transaction = this.#db.transaction(calendarStoreName);
+      const calendars = transaction.objectStore(calendarStoreName);
+      const request = calendars.getAll();
+      request.onsuccess = function () {
+        resolve(request.result || []);
+      };
+      request.onerror = function () {
+        reject(new Error('query failed'));
+      };
+    });
+  }
+
+  async saveCalendar(calendar: RemoteCalendar): Promise<void> {
+    return this.#save(calendarStoreName, calendar);
+  }
+
+  async saveEvent(event: Event): Promise<void> {
+    return this.#save(eventStoreName, event);
+  }
+
+  async getEventsBetween(
+    start: number,
+    end: number
+  ): Promise<SerialisedEvent[]> {
+    return new Promise((resolve, reject) => {
+      const transaction = this.#db.transaction(eventStoreName);
+      const events = transaction.objectStore(eventStoreName);
       const index = events.index(timestampIndex);
       const request = index.getAll(IDBKeyRange.bound(start, end));
       request.onsuccess = function () {

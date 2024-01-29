@@ -1,10 +1,11 @@
 import {Temporal} from '@js-temporal/polyfill';
 import {days, months} from './constants.js';
 import {connect} from './event-db.js';
-import {Calendar, WeekDay} from './model.js';
+import {Calendar, WeekDay, Event, SerialisedEvent} from './model.js';
 
 export async function getData(): Promise<Calendar> {
   const db = await connect();
+  const calendars = await db.getCalendars();
 
   const n = Temporal.Now;
   const now = n.plainDateISO();
@@ -18,11 +19,12 @@ export async function getData(): Promise<Calendar> {
     now.add({days: 6}).toZonedDateTime('UTC').toInstant()
   ).epochMilliseconds;
 
-  const events = (
+  const events: Event[] = (
     await db.getEventsBetween(sundayTimestamp, saturdayTimestamp)
-  ).map((e) => {
+  ).map((e: SerialisedEvent): Event => {
     return {
       ...e,
+      calendar: calendars.find((c) => c.uid === e.calendarId),
       start: Temporal.Instant.from(e.start),
       end: Temporal.Instant.from(e.end),
     };

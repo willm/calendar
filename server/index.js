@@ -3,7 +3,8 @@ import ical from 'node-ical';
 
 http
   .createServer((req, res) => {
-    if (req.method === 'options') {
+    console.log(req.url);
+    if (req.method === 'OPTIONS') {
       console.log('foo');
       res.writeHead(204, {
         'Access-Control-Allow-Origin': '*',

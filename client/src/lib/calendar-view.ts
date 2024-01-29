@@ -1,3 +1,4 @@
+import {cell} from './cell-viaw';
 import {Calendar} from './model';
 
 function formatHour(hourIndex: number): string {
@@ -26,16 +27,7 @@ function table(calendar: Calendar) {
           ${calendar.weekDays
             .map((day) => {
               let hour = day.hours[hourIndex];
-              let classes = [];
-              if (day.highlight) {
-                classes.push('current-day');
-              }
-              if (hour.highlight) {
-                classes.push('current-time');
-              }
-              return `<td ${
-                classes.length ? `class="${classes.join(' ')}"` : ''
-              }>${hour.events.map((e) => e.summary).join(' ')}</td>`;
+              return cell(hour, day);
             })
             .join('')}
         </tr>`

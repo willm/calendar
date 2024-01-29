@@ -5,13 +5,39 @@
   --grey-dark: #030303;
 }
 
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10% 0;
+}
+
 button, input {
   background-color: inherit;
   border: none;
   font-family: sans-serif;
   color: var(--white);
-  font-size: xxx-large;
+  font-size: 26px;
   cursor: pointer;
+}
+
+button:focus-visible {
+  border: none;
+}
+
+label {
+  font-weight: bold;
+}
+
+input {
+  border-bottom: solid 1px var(--white);
+  width: 100%;
+}
+
+input:focus-visible {
+  border: none;
+  border-bottom: solid 1px var(--white);
+  outline: none;
 }
 
 button:hover {
@@ -41,10 +67,15 @@ th {
 }
 
 td, tr, th, table, thead, tbody {
+  text-align: center;
   border-spacing: 0;
   padding: 0;
   border: none;
   margin: auto;
+}
+
+li {
+  list-style-type: none;
 }
 
 tbody > tr:nth-child(odd) {
@@ -64,10 +95,35 @@ tbody > tr:nth-child(even) {
   border: solid 1px var(--white);
 }
 
+.event {
+  background-color: #ff0000;
+  opacity: 0.8;
+  color: var(--grey-dark);
+}
+
+.loader {
+  width: 1em;
+  height: 1em;
+
+  border-radius: 50%;
+  border: 0.25em solid var(--grey-dark);
+  border-top-color: var(--white); /* overrides top color to stand out */
+
+  animation: 2s infinite loader;
+}
+
+@keyframes loader {
+    from {transform: rotate(0deg)}
+    to {transform: rotate(360deg)}
+}
+
 dialog {
-  background-color: var(--grey-dark);
+  background: linear-gradient(315deg, rgba(0,0,0,1) 72%, rgba(70,71,85,1) 100%);
   border-radius: 10px;
   font-family: sans-serif;
+  width: 50%;
+  padding: 0 5%;
+  height: 70%;
 }
 
 ::backdrop {

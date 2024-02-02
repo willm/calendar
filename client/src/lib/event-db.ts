@@ -25,12 +25,19 @@ export async function connect(): Promise<EventStore> {
 
     openRequest.onsuccess = function () {
       const db = openRequest.result;
-      resolve(new EventStore(db));
+      resolve(new IndexedDBEventStore(db));
     };
   });
 }
 
-class EventStore {
+export interface EventStore {
+  getCalendars: () => Promise<RemoteCalendar[]>;
+  saveCalendar: (calendar: RemoteCalendar) => Promise<void>;
+  saveEvent: (event: SerialisedEvent) => Promise<void>;
+  getEventsBetween: (start: number, end: number) => Promise<SerialisedEvent[]>;
+}
+
+class IndexedDBEventStore implements EventStore {
   #db: IDBDatabase;
   constructor(db: IDBDatabase) {
     this.#db = db;

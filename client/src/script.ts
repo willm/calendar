@@ -1,5 +1,5 @@
 import {renderCalendar} from './lib/calendar-view.js';
-import {getData} from './lib/get-data.js';
+import {getCalendar} from './lib/get-calendar.js';
 import {connect} from './lib/event-db.js';
 import * as api from './lib/api.js';
 import {RemoteCalendar, SerialisedEvent} from './lib/model.js';
@@ -72,9 +72,11 @@ async function main() {
   registerAddCalendarButton();
   refreshButton();
 
-  renderCalendar(await getData(Temporal.Now.plainDateTimeISO()));
+  const store = await connect();
+  renderCalendar(await getCalendar(store, Temporal.Now.plainDateTimeISO()));
   setInterval(
-    async () => renderCalendar(await getData(Temporal.Now.plainDateTimeISO())),
+    async () =>
+      renderCalendar(await getCalendar(store, Temporal.Now.plainDateTimeISO())),
     300000
   );
 }

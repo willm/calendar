@@ -1,12 +1,14 @@
 import {Temporal} from '@js-temporal/polyfill';
 import {days, months} from './constants.js';
-import {connect} from './event-db.js';
 import {Calendar, WeekDay, Event, SerialisedEvent} from './model.js';
+import type {EventStore} from './event-db';
 
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-export async function getData(now: Temporal.PlainDateTime): Promise<Calendar> {
-  const db = await connect();
+export async function getCalendar(
+  db: EventStore,
+  now: Temporal.PlainDateTime
+): Promise<Calendar> {
   const calendars = await db.getCalendars();
 
   const sunday = Temporal.Instant.from(

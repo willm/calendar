@@ -1,4 +1,4 @@
-import {Calendar, Event, RemoteCalendar, SerialisedEvent} from './model';
+import {RemoteCalendar, SerialisedEvent} from './model';
 const eventStoreName = 'events';
 const dbName = 'calendar';
 const calendarStoreName = 'calendar';
@@ -68,7 +68,7 @@ class EventStore {
     return this.#save(calendarStoreName, calendar);
   }
 
-  async saveEvent(event: Event): Promise<void> {
+  async saveEvent(event: SerialisedEvent): Promise<void> {
     return this.#save(eventStoreName, event);
   }
 

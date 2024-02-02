@@ -8,7 +8,7 @@ export interface RemoteCalendar {
 }
 
 export interface Events {
-  events: Event[];
+  events: SerialisedEvent[];
 }
 
 export interface SerialisedEvent {

@@ -2,7 +2,27 @@ import {renderCalendar} from './lib/calendar-view.js';
 import {getData} from './lib/get-data.js';
 import {connect} from './lib/event-db.js';
 import * as api from './lib/api.js';
-import {Calendar, Event, RemoteCalendar} from './lib/model.js';
+import {RemoteCalendar, SerialisedEvent} from './lib/model.js';
+import {Temporal} from '@js-temporal/polyfill';
+
+function refreshButton() {
+  const button = document.getElementById('refresh-button');
+  button?.addEventListener('click', async () => {
+    const db = await connect();
+    const calendars = await db.getCalendars();
+    await Promise.all(
+      calendars.map(async (c: RemoteCalendar) => {
+        const icalData = await api.addCalendar(c.url);
+        return await Promise.all(
+          icalData.events.map((e: SerialisedEvent) => {
+            e.calendarId = c.uid;
+            return db.saveEvent(e);
+          })
+        );
+      })
+    );
+  });
+}
 
 function registerAddCalendarButton() {
   const dialog = document.getElementById(
@@ -22,7 +42,7 @@ function registerAddCalendarButton() {
     submitCalButton!.innerHTML = '<div class="loader" />';
     const link = (document.getElementById('ical-link') as HTMLInputElement)
       ?.value;
-    const name = (document.getElementById('calenday-name') as HTMLInputElement)
+    const name = (document.getElementById('calendar-name') as HTMLInputElement)
       ?.value;
     console.log(link);
     const calendar: RemoteCalendar = {
@@ -36,7 +56,7 @@ function registerAddCalendarButton() {
     const db = await connect();
     db.saveCalendar(calendar);
     await Promise.all(
-      icalData.events.map((e: Event) => {
+      icalData.events.map((e: SerialisedEvent) => {
         e.calendarId = calendar.uid;
         return db.saveEvent(e);
       })
@@ -50,8 +70,13 @@ function registerAddCalendarButton() {
 
 async function main() {
   registerAddCalendarButton();
-  renderCalendar(await getData());
-  setInterval(async () => renderCalendar(await getData()), 10000);
+  refreshButton();
+
+  renderCalendar(await getData(Temporal.Now.plainDateTimeISO()));
+  setInterval(
+    async () => renderCalendar(await getData(Temporal.Now.plainDateTimeISO())),
+    300000
+  );
 }
 
 main();

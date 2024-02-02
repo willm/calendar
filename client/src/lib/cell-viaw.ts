@@ -12,7 +12,8 @@ export function cell(hour: Hour, day: WeekDay): string {
   element.innerHTML = `<ul>${hour.events
     .map(
       (e) =>
-        `<li style="background-color: ${e.calendar?.color}">${e.summary}</li>`
+        `<li style="background-color: ${e.calendar?.color}">${e.summary}
+        </li>`
     )
     .join('')}</ul>`;
   return element.outerHTML;

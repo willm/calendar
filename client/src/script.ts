@@ -31,17 +31,18 @@ function registerAddCalendarButton() {
   const closeButton = document.getElementById('close-calendar-modal');
   const addCalButton = document.getElementById('add-calendar-button');
   const submitCalButton = document.getElementById('add-calendar-submit-button');
+  const linkInput = document.getElementById('ical-link') as HTMLInputElement;
   closeButton?.addEventListener('click', () => dialog?.close());
   addCalButton?.addEventListener('click', () => {
     dialog?.showModal();
+    linkInput.focus();
   });
 
   const form = document.getElementById('add-calendar-form') as HTMLFormElement;
   form?.addEventListener('submit', async (evt) => {
     evt.preventDefault();
     submitCalButton!.innerHTML = '<div class="loader" />';
-    const link = (document.getElementById('ical-link') as HTMLInputElement)
-      ?.value;
+    const link = linkInput?.value;
     const name = (document.getElementById('calendar-name') as HTMLInputElement)
       ?.value;
     console.log(link);

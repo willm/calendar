@@ -13,13 +13,20 @@ form {
 }
 
 button,
-input {
+input[type=text],
+input[type=url]
+{
   background-color: inherit;
   border: none;
   font-family: sans-serif;
   color: var(--white);
   font-size: 26px;
   cursor: pointer;
+}
+
+input[type=color] {
+  background-color: inherit;
+  border: none;
 }
 
 button:focus-visible {

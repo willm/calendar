@@ -2,6 +2,7 @@ import {renderCalendar} from './lib/calendar-view.js';
 import {getCalendar} from './lib/get-calendar.js';
 import {connect} from './lib/event-db.js';
 import * as api from './lib/api.js';
+import {addCalendar} from './lib/actions/add-calendar';
 import {RemoteCalendar, SerialisedEvent} from './lib/model.js';
 import {Temporal} from '@js-temporal/polyfill';
 
@@ -45,27 +46,24 @@ function registerAddCalendarButton() {
     const link = linkInput?.value;
     const name = (document.getElementById('calendar-name') as HTMLInputElement)
       ?.value;
+    const color = (
+      document.getElementById('calendar-color') as HTMLInputElement
+    )?.value;
     console.log(link);
     const calendar: RemoteCalendar = {
       uid: crypto.randomUUID().toString(),
       name: name,
-      // TODO: color picker
-      color: 'blue',
+      color: color,
       url: link,
     };
-    const icalData = await api.addCalendar(link);
-    const db = await connect();
-    db.saveCalendar(calendar);
-    await Promise.all(
-      icalData.events.map((e: SerialisedEvent) => {
-        e.calendarId = calendar.uid;
-        return db.saveEvent(e);
-      })
-    );
-
-    console.log(icalData);
-    submitCalButton!.innerText = 'OK';
-    dialog.close();
+    try {
+      await addCalendar(link, calendar);
+      submitCalButton!.innerText = 'OK';
+      dialog.close();
+    } catch (err) {
+      // todo: display error
+      submitCalButton!.innerText = 'OK';
+    }
   });
 }
 

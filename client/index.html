@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
   </head>
   <body>
-    <div style="display: flex; justify-content: space-between">
+    <header style="display: flex; justify-content: space-between">
       <h1>January 2024</h1>
       <dialog autofocus id="add-calendar-modal">
         <header class="modal__header">
@@ -53,6 +53,8 @@
             <input id="ical-link" type="url" autofocus="autofocus" />
             <label for="calendar-name">Name</label>
             <input id="calendar-name" type="text" />
+            <label for="calendar-color">Color</label>
+            <input id="calendar-color" type="color" />
             <button type="submit" id="add-calendar-submit-button">OK</button>
           </form>
         </div>
@@ -90,7 +92,7 @@
           </svg>
         </button>
       </div>
-    </div>
+    </header>
     <script type="module" src="src/script.ts" defer></script>
   </body>
 </html>

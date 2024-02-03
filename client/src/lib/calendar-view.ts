@@ -20,19 +20,21 @@ function table(calendar: Calendar) {
       </tr>
     </thead>
     <tbody>
-      ${calendar.weekDays[0].hours
-        .map(
-          (_hour, hourIndex) => `<tr>
+      ${Array.from(
+        {length: 24},
+        (_hour, hourIndex) => `<tr>
           <td>${formatHour(hourIndex)}</td>
           ${calendar.weekDays
             .map((day) => {
               let hour = day.hours[hourIndex];
+              if (hour === undefined) {
+                throw new Error('day does not have enough hours');
+              }
               return cell(hour, day);
             })
             .join('')}
         </tr>`
-        )
-        .join('')}
+      ).join('')}
     </tbody>
   </table>`;
 }

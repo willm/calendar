@@ -33,6 +33,13 @@ export async function getCalendar(
 
   const dayOfMonth = now.toPlainMonthDay().day;
   const dayOfWeek = days[now.dayOfWeek % 7];
+  if (dayOfWeek === undefined) {
+    throw new Error("Couldn't parse day of the week");
+  }
+  const month = months[now.month - 1];
+  if (month === undefined) {
+    throw new Error("Couldn't parse month");
+  }
   return {
     weekDays: days
       .map((day, i): WeekDay => {
@@ -66,7 +73,7 @@ export async function getCalendar(
       })
       .slice(1, 6),
     dayOfWeek,
-    month: months[now.month - 1],
+    month,
     dayOfMonth,
     year: now.year,
   };

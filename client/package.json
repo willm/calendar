@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "prettier -c ../prettierrc.json --check .",
+    "format": "prettier  -c ../prettierrc.json --write ."
   },
   "author": "",
   "license": "ISC",

@@ -7,7 +7,9 @@
   ],
   "description": "",
   "main": "index.js",
+  "prettier": "./prettierrc.json",
   "devDependencies": {
+    "prettier": "^2.8.8",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
   },

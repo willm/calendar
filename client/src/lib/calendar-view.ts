@@ -1,6 +1,14 @@
 import {cell} from './cell-viaw';
 import {Calendar} from './model';
 
+function renderHeader(calendar: Pick<Calendar, 'month' | 'year'>) {
+  document.querySelector('cal-header')?.remove();
+  const header = document.createElement('cal-header');
+  header.innerText = `${calendar.month} ${calendar.year}`;
+
+  document.body.appendChild(header);
+}
+
 function formatHour(hourIndex: number): string {
   return hourIndex.toString().padStart(2, '0') + ':00';
 }
@@ -40,6 +48,7 @@ function table(calendar: Calendar) {
 }
 
 export function renderCalendar(data: Calendar) {
+  renderHeader(data);
   document.querySelector('main')?.remove();
   const el = document.createElement('main');
   const content = table(data);

@@ -17,8 +17,10 @@ input[type=text],
 input[type=url]
 {
   background-color: inherit;
+  padding: 10px 0;
   border: none;
   font-family: sans-serif;
+  vertical-align: middle;
   color: var(--white);
   font-size: 26px;
   cursor: pointer;
@@ -52,11 +54,14 @@ button:hover {
   color: var(--grey-light);
 }
 
-.button__header {
+.button__large {
   width: 1.5em;
-  font-weight: bolder;
-  vertical-align: middle;
 }
+
+.button__medium {
+  width: 1em;
+}
+
 
 .icon:hover {
   stroke: var(--grey-light);
@@ -184,6 +189,8 @@ dialog > div {
 }
 
 .modal__header {
+  padding-left: 5%;
   display: flex;
-  flex-direction: row-reverse;
+  color: var(--white);
+  justify-content: space-between;
 }

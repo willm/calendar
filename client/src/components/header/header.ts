@@ -1,24 +1,12 @@
 import {addCalendar} from '../../lib/actions/add-calendar';
-import {connect} from '../../lib/event-db';
-import {RemoteCalendar, SerialisedEvent} from '../../lib/model';
-import * as api from '../../lib/api';
+import {RemoteCalendar} from '../../lib/model';
+import {App} from '../../lib/app-state';
 
 function refreshButton(doc: ShadowRoot) {
+  const app = App.get();
   const button = doc.getElementById('refresh-button');
-  button?.addEventListener('click', async () => {
-    const db = await connect();
-    const calendars = await db.getCalendars();
-    await Promise.all(
-      calendars.map(async (c: RemoteCalendar) => {
-        const icalData = await api.addCalendar(c.url);
-        return await Promise.all(
-          icalData.events.map((e: SerialisedEvent) => {
-            e.calendarId = c.uid;
-            return db.saveEvent(e);
-          })
-        );
-      })
-    );
+  button?.addEventListener('click', () => {
+    app.refreshCalendars();
   });
 }
 
@@ -79,6 +67,13 @@ customElements.define(
 
     connectedCallback() {
       refreshButton(this.shadowRoot!);
+      const button = this.shadowRoot!.getElementById('refresh-button');
+      App.get().on('refreshingCalendars', (evt: Event) => {
+        const value: boolean = (evt as CustomEvent).detail;
+        button!.innerHTML = value
+          ? '<div class="loader" />'
+          : '<cal-icon type="refresh" />';
+      });
       registerAddCalendarButton(this.shadowRoot!);
     }
   }

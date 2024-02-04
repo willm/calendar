@@ -1,12 +1,17 @@
 import {connect} from './event-db';
-import type {RemoteCalendar, SerialisedEvent} from './model';
+import {Temporal} from '@js-temporal/polyfill';
+import type {Calendar, RemoteCalendar, SerialisedEvent} from './model';
 import * as api from './api';
+import {addCalendar} from './actions/add-calendar';
+import {getCalendar} from './get-calendar';
 
 interface AppState {
   refreshingCalendars: boolean;
+  addingCalendar: boolean;
+  calendar: Calendar | undefined;
 }
 
-const events = ['refreshingCalendars'] as const;
+const events = ['refreshingCalendars', 'addingCalendar', 'calendar'] as const;
 
 function makeHandler(bus: HTMLDivElement): ProxyHandler<AppState> {
   return {
@@ -16,6 +21,14 @@ function makeHandler(bus: HTMLDivElement): ProxyHandler<AppState> {
         bus.dispatchEvent(
           new CustomEvent('refreshingCalendars', {detail: value})
         );
+      }
+      if (key === 'addingCalendar') {
+        state[key] = value;
+        bus.dispatchEvent(new CustomEvent('addingCalendar', {detail: value}));
+      }
+      if (key === 'calendar') {
+        state[key] = value;
+        bus.dispatchEvent(new CustomEvent('calendar', {detail: value}));
       }
       return true;
     },
@@ -29,7 +42,7 @@ export class App {
   private constructor() {
     this.#bus = document.createElement('div');
     this.#state = new Proxy(
-      {refreshingCalendars: false},
+      {refreshingCalendars: false, addingCalendar: false, calendar: undefined},
       makeHandler(this.#bus)
     );
   }
@@ -64,5 +77,19 @@ export class App {
       })
     );
     this.#state.refreshingCalendars = false;
+  }
+
+  public async addCalendar(link: string, calendar: RemoteCalendar) {
+    this.#state.addingCalendar = true;
+    await addCalendar(link, calendar);
+    this.#state.addingCalendar = false;
+  }
+
+  public async getCalendar() {
+    const store = await connect();
+    this.#state.calendar = await getCalendar(
+      store,
+      Temporal.Now.plainDateTimeISO()
+    );
   }
 }

@@ -9,7 +9,7 @@ export function cell(hour: Hour, day: WeekDay): string {
     element.classList.add('current-time');
   }
 
-  element.innerHTML = `<ul>${hour.events
+  element.innerHTML = `<ul style="list-style-type: none">${hour.events
     .map(
       (e) =>
         `<li style="background-color: ${e.calendar?.color}">${e.summary}

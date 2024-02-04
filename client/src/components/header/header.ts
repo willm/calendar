@@ -1,25 +1,34 @@
-import {addCalendar} from '../../lib/actions/add-calendar';
-import {RemoteCalendar} from '../../lib/model';
+import {Calendar, RemoteCalendar} from '../../lib/model';
 import {App} from '../../lib/app-state';
 
-function refreshButton(doc: ShadowRoot) {
-  const app = App.get();
+const loader = '<div class="loader"/>';
+
+function refreshButton(app: App, doc: ShadowRoot) {
   const button = doc.getElementById('refresh-button');
   button?.addEventListener('click', () => {
     app.refreshCalendars();
   });
+  app.on('refreshingCalendars', (evt: Event) => {
+    const value: boolean = (evt as CustomEvent).detail;
+    button!.innerHTML = value ? loader : '<cal-icon type="refresh" />';
+  });
 }
 
-function registerAddCalendarButton(doc: ShadowRoot) {
+function registerAddCalendarButton(app: App, doc: ShadowRoot) {
   const dialog = doc.getElementById('add-calendar-modal') as HTMLDialogElement;
-  console.log('dialog', dialog);
   const closeButton = doc.getElementById('close-calendar-modal');
   const addCalButton = doc.getElementById('add-calendar-button');
   const submitCalButton = doc.getElementById('add-calendar-submit-button');
+  app.on('addingCalendar', (evt) => {
+    const isAdding = (evt as CustomEvent).detail as boolean;
+    submitCalButton!.innerHTML = isAdding ? loader : 'Add';
+    if (!isAdding) {
+      dialog.close();
+    }
+  });
   const linkInput = doc.getElementById('ical-link') as HTMLInputElement;
   closeButton?.addEventListener('click', () => dialog?.close());
   addCalButton?.addEventListener('click', () => {
-    console.log('hello');
     dialog?.showModal();
     linkInput.focus();
   });
@@ -27,54 +36,45 @@ function registerAddCalendarButton(doc: ShadowRoot) {
   const form = doc.getElementById('add-calendar-form') as HTMLFormElement;
   form?.addEventListener('submit', async (evt) => {
     evt.preventDefault();
-    submitCalButton!.innerHTML = '<div class="loader" />';
     const link = linkInput?.value;
     const name = (doc.getElementById('calendar-name') as HTMLInputElement)
       ?.value;
     const color = (doc.getElementById('calendar-color') as HTMLInputElement)
       ?.value;
-    console.log(link);
     const calendar: RemoteCalendar = {
       uid: crypto.randomUUID().toString(),
       name: name,
       color: color,
       url: link,
     };
-    try {
-      await addCalendar(link, calendar);
-      submitCalButton!.innerText = 'OK';
-      dialog.close();
-    } catch (err) {
-      // todo: display error
-      submitCalButton!.innerText = 'OK';
-    }
+    app.addCalendar(link, calendar);
   });
 }
 
-customElements.define(
-  'cal-header',
-  class extends HTMLElement {
-    constructor() {
-      super();
-      const template = document.getElementById('header') as HTMLTemplateElement;
-      const templateContent = template.content;
+class HeaderElement extends HTMLElement {
+  static observeredAttibutes = ['title'];
 
-      const shadowRoot = this.attachShadow({mode: 'open'});
-      const element = templateContent.cloneNode(true);
+  constructor() {
+    super();
+    const template = document.getElementById('header') as HTMLTemplateElement;
+    const templateContent = template.content;
 
-      shadowRoot.appendChild(element);
-    }
+    const shadowRoot = this.attachShadow({mode: 'open'});
+    const element = templateContent.cloneNode(true);
 
-    connectedCallback() {
-      refreshButton(this.shadowRoot!);
-      const button = this.shadowRoot!.getElementById('refresh-button');
-      App.get().on('refreshingCalendars', (evt: Event) => {
-        const value: boolean = (evt as CustomEvent).detail;
-        button!.innerHTML = value
-          ? '<div class="loader" />'
-          : '<cal-icon type="refresh" />';
-      });
-      registerAddCalendarButton(this.shadowRoot!);
-    }
+    shadowRoot.appendChild(element);
   }
-);
+
+  connectedCallback() {
+    const app = App.get();
+    refreshButton(app, this.shadowRoot!);
+    registerAddCalendarButton(app, this.shadowRoot!);
+    app.on('calendar', (evt) => {
+      const calendar = (evt as CustomEvent).detail as Calendar;
+      const heading = this.shadowRoot!.querySelector('h1');
+      heading!.innerText = `${calendar.month} ${calendar.year}`;
+    });
+  }
+}
+
+customElements.define('cal-header', HeaderElement);

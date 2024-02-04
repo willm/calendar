@@ -8,7 +8,7 @@ export async function addCalendar(
 ): Promise<void> {
   const icalData = await api.addCalendar(link);
   const db = await connect();
-  db.saveCalendar(calendar);
+  await db.saveCalendar(calendar);
   await Promise.all(
     icalData.events.map((e: SerialisedEvent) => {
       e.calendarId = calendar.uid;

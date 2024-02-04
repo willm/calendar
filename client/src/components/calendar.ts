@@ -1,21 +1,23 @@
-import {cell} from './cell-viaw';
-import {Calendar} from './model';
-
-function renderHeader(calendar: Pick<Calendar, 'month' | 'year'>) {
-  document.querySelector('cal-header')?.remove();
-  const header = document.createElement('cal-header');
-  header.innerText = `${calendar.month} ${calendar.year}`;
-
-  document.body.appendChild(header);
-}
+import {App} from '../lib/app-state';
+import {cell} from '../lib/cell-viaw';
+import {Calendar} from '../lib/model';
 
 function formatHour(hourIndex: number): string {
   return hourIndex.toString().padStart(2, '0') + ':00';
 }
 
-function table(calendar: Calendar) {
-  return `<table>
-    <thead>
+class CalendarElement extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    const shadowRoot = this.attachShadow({mode: 'open'});
+    const table = document.createElement('table');
+    shadowRoot.appendChild(table);
+    App.get().on('calendar', (evt) => {
+      const calendar = (evt as CustomEvent).detail as Calendar;
+      table.innerHTML = `<thead>
       <tr>
         <th />
         ${calendar.weekDays
@@ -43,15 +45,8 @@ function table(calendar: Calendar) {
             .join('')}
         </tr>`
       ).join('')}
-    </tbody>
-  </table>`;
+    </tbody>`;
+    });
+  }
 }
-
-export function renderCalendar(data: Calendar) {
-  renderHeader(data);
-  document.querySelector('main')?.remove();
-  const el = document.createElement('main');
-  const content = table(data);
-  el.innerHTML = content;
-  document.body.appendChild(el);
-}
+customElements.define('cal-calendar', CalendarElement);

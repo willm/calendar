@@ -68,8 +68,8 @@ customElements.define(
   class extends HTMLElement {
     constructor() {
       super();
-      let template = document.getElementById('header') as HTMLTemplateElement;
-      let templateContent = template.content;
+      const template = document.getElementById('header') as HTMLTemplateElement;
+      const templateContent = template.content;
 
       const shadowRoot = this.attachShadow({mode: 'open'});
       const element = templateContent.cloneNode(true);

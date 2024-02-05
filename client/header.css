@@ -1,20 +1,7 @@
-button:hover {
-  color: var(--grey-light);
+h1 {
+  margin: 0;
 }
 
-.button__large {
-  width: 1.5em;
-}
-
-.button__medium {
-  width: 1em;
-}
-
-.icon:hover {
-  stroke: var(--grey-light);
-}
-
-button,
 input[type=text],
 input[type=url]
 {
@@ -30,10 +17,6 @@ input[type=url]
 
 input[type=color] {
   background-color: inherit;
-  border: none;
-}
-
-button:focus-visible {
   border: none;
 }
 
@@ -103,4 +86,9 @@ dialog {
 
 dialog > div {
   padding: 2% 5%;
+}
+
+.btn-group {
+  display: flex;
+  align-items: center;
 }

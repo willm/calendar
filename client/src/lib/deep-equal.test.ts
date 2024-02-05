@@ -3,6 +3,7 @@ import {deepEqual} from './deep-equal';
 
 [
   [{}, {}, true],
+  [undefined, {}, false],
   [{name: 'bob'}, {name: 'alice'}, false],
   [{name: 'bob'}, {name: 'bob'}, true],
   [{name: 'bob'}, {}, false],

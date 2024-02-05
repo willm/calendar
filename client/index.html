@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
   </head>
   <body>
-    <cal-app />
+    <cal-app></cal-app>
     <template id="header">
       <header style="display: flex; justify-content: space-between">
         <h1></h1>
@@ -19,13 +19,9 @@
               media="screen"
             />
             <h2>Add a new calendar</h2>
-            <button
-              type="button"
-              class="button__medium"
-              id="close-calendar-modal"
-            >
-              <cal-icon type="close" />
-            </button>
+            <cal-button size="medium" id="close-calendar-modal">
+              <cal-icon type="close"></cal-icon>
+            </cal-button>
           </header>
           <div>
             <form id="add-calendar-form">
@@ -39,15 +35,46 @@
             </form>
           </div>
         </dialog>
-        <div>
-          <button class="button__large" type="button" id="refresh-button">
-            <cal-icon type="refresh" />
-          </button>
-          <button class="button__large" type="button" id="add-calendar-button">
-            <cal-icon type="plus" />
-          </button>
+        <div class="btn-group">
+          <cal-button id="refresh-button">
+            <cal-icon type="refresh"></cal-icon>
+          </cal-button>
+          <cal-button id="add-calendar-button">
+            <cal-icon type="plus"></cal-icon>
+          </cal-button>
         </div>
       </header>
+    </template>
+    <template id="button">
+      <style>
+        button {
+          font-size: 26px;
+          background-color: inherit;
+          color: inherit;
+          border: none;
+          vertical-align: middle;
+          cursor: pointer;
+        }
+
+        button:hover {
+          color: var(--grey-light);
+        }
+
+        .button__large {
+          width: 1.5em;
+        }
+
+        .button__medium {
+          width: 1em;
+        }
+
+        button:focus-visible {
+          border: none;
+        }
+      </style>
+      <button>
+        <slot></slot>
+      </button>
     </template>
     <script type="module" src="src/script.ts" defer></script>
   </body>

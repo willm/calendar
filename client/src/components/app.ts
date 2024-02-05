@@ -1,9 +1,17 @@
+import './alert';
+import './header/header';
+import './icon';
+import './calendar';
+import './button';
+
 class App extends HTMLElement {
   connectedCallback() {
-    const shadowRoot = this.attachShadow({mode: 'open'});
     const element = document.createElement('div');
-    element.innerHTML = `<cal-header></cal-header><cal-calendar></cal-calendar>`;
-    shadowRoot.appendChild(element);
+    element.innerHTML = `
+      <cal-alert></cal-alert>
+      <cal-header></cal-header>
+      <cal-calendar></cal-calendar>`;
+    this.appendChild(element);
   }
 }
 customElements.define('cal-app', App);

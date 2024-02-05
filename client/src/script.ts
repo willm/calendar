@@ -1,6 +1,3 @@
-import './components/header/header';
-import './components/icon';
-import './components/calendar';
 import './components/app';
 import {App} from './lib/app-state';
 

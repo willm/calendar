@@ -12,12 +12,11 @@ class CalendarElement extends HTMLElement {
   }
 
   connectedCallback() {
-    const shadowRoot = this.attachShadow({mode: 'open'});
     const table = document.createElement('table');
-    shadowRoot.appendChild(table);
+    this.appendChild(table);
     App.get().on('calendar', (evt) => {
       const calendar = (evt as CustomEvent).detail as Calendar;
-      table.innerHTML = `<thead>
+      table!.innerHTML = `<thead>
       <tr>
         <th />
         ${calendar.weekDays

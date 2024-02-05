@@ -4,14 +4,21 @@ import type {Calendar, RemoteCalendar, SerialisedEvent} from './model';
 import * as api from './api';
 import {addCalendar} from './actions/add-calendar';
 import {getCalendar} from './get-calendar';
+import {deepEqual} from './deep-equal';
 
 interface AppState {
   refreshingCalendars: boolean;
   addingCalendar: boolean;
   calendar: Calendar | undefined;
+  errorMessage: string | undefined;
 }
 
-const events = ['refreshingCalendars', 'addingCalendar', 'calendar'] as const;
+const events = [
+  'refreshingCalendars',
+  'addingCalendar',
+  'calendar',
+  'errorMessage',
+] as const;
 
 function makeHandler(bus: HTMLDivElement): ProxyHandler<AppState> {
   return {
@@ -22,11 +29,15 @@ function makeHandler(bus: HTMLDivElement): ProxyHandler<AppState> {
           new CustomEvent('refreshingCalendars', {detail: value})
         );
       }
+      if (key === 'errorMessage') {
+        state[key] = value;
+        bus.dispatchEvent(new CustomEvent('errorMessage', {detail: value}));
+      }
       if (key === 'addingCalendar') {
         state[key] = value;
         bus.dispatchEvent(new CustomEvent('addingCalendar', {detail: value}));
       }
-      if (key === 'calendar') {
+      if (key === 'calendar' && !deepEqual(state[key], value)) {
         state[key] = value;
         bus.dispatchEvent(new CustomEvent('calendar', {detail: value}));
       }
@@ -42,7 +53,12 @@ export class App {
   private constructor() {
     this.#bus = document.createElement('div');
     this.#state = new Proxy(
-      {refreshingCalendars: false, addingCalendar: false, calendar: undefined},
+      {
+        refreshingCalendars: false,
+        addingCalendar: false,
+        calendar: undefined,
+        errorMessage: undefined,
+      },
       makeHandler(this.#bus)
     );
   }
@@ -63,25 +79,36 @@ export class App {
 
   public async refreshCalendars() {
     this.#state.refreshingCalendars = true;
-    const db = await connect();
-    const calendars = await db.getCalendars();
-    await Promise.all(
-      calendars.map(async (c: RemoteCalendar) => {
-        const icalData = await api.addCalendar(c.url);
-        return await Promise.all(
-          icalData.events.map((e: SerialisedEvent) => {
-            e.calendarId = c.uid;
-            return db.saveEvent(e);
-          })
-        );
-      })
-    );
-    this.#state.refreshingCalendars = false;
+    try {
+      const db = await connect();
+      const calendars = await db.getCalendars();
+      await Promise.all(
+        calendars.map(async (c: RemoteCalendar) => {
+          const icalData = await api.addCalendar(c.url);
+          return await Promise.all(
+            icalData.events.map((e: SerialisedEvent) => {
+              e.calendarId = c.uid;
+              return db.saveEvent(e);
+            })
+          );
+        })
+      );
+    } catch (err) {
+      this.setErrorMessage((err as Error).message);
+    } finally {
+      this.#state.refreshingCalendars = false;
+    }
   }
 
   public async addCalendar(link: string, calendar: RemoteCalendar) {
     this.#state.addingCalendar = true;
-    await addCalendar(link, calendar);
+    try {
+      await addCalendar(link, calendar);
+    } catch (err) {
+      this.#state.addingCalendar = false;
+      this.setErrorMessage((err as Error).message);
+      return;
+    }
     this.#state.addingCalendar = false;
   }
 
@@ -91,5 +118,9 @@ export class App {
       store,
       Temporal.Now.plainDateTimeISO()
     );
+  }
+
+  public setErrorMessage(message: string | undefined) {
+    this.#state.errorMessage = message;
   }
 }

@@ -1,5 +1,6 @@
 import {Calendar, RemoteCalendar} from '../../lib/model';
 import {App} from '../../lib/app-state';
+import '../icon';
 
 const loader = '<div class="loader"/>';
 
@@ -10,7 +11,7 @@ function refreshButton(app: App, doc: ShadowRoot) {
   });
   app.on('refreshingCalendars', (evt: Event) => {
     const value: boolean = (evt as CustomEvent).detail;
-    button!.innerHTML = value ? loader : '<cal-icon type="refresh" />';
+    button!.innerHTML = value ? loader : '<cal-icon type="refresh"></cal-icon>';
   });
 }
 

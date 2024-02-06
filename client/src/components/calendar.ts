@@ -45,6 +45,8 @@ class CalendarElement extends HTMLElement {
         </tr>`
       ).join('')}
     </tbody>`;
+      const currentCell = table.querySelector('.current-day.current-time');
+      currentCell?.scrollIntoView();
     });
   }
 }

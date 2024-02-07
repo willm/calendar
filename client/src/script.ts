@@ -6,7 +6,7 @@ async function main() {
   app.getCalendar();
   setInterval(() => {
     app.getCalendar();
-  }, 100000);
+  }, 10000);
 }
 
 main();

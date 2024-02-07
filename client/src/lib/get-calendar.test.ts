@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {getCalendar} from './get-calendar';
+import {getCalendar, occursWithin} from './get-calendar';
 import {Temporal} from '@js-temporal/polyfill';
 import type {RemoteCalendar} from './model';
 import type {EventStore} from './event-db';
@@ -50,10 +50,62 @@ test('A plain date is mapped to a calendar', async () => {
     false,
     true,
   ]);
-  expect(calendar.weekDays.every((d) => d.hours.length === 24)).toBe(true);
-  const monday = calendar.weekDays[0]!;
-  expect(monday.hours.length).toBe(24);
-  const midnight = monday.hours[0]!;
-  expect(midnight.highlight).toBe(false);
-  expect(midnight.events.length).toBe(0);
+  expect(calendar.hour).toBe(19);
+  expect(calendar.weekDays.length).toBe(5);
+});
+
+test('a whole day event only occurs during 1 day', () => {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const feb24 = {
+    month: 2,
+    year: 2024,
+  };
+  const start = Temporal.ZonedDateTime.from({
+    ...feb24,
+    day: 4,
+    hour: 0,
+    minute: 0,
+    timeZone,
+  }).toInstant();
+
+  const end = Temporal.ZonedDateTime.from({
+    ...feb24,
+    day: 5,
+    hour: 0,
+    minute: 0,
+    timeZone,
+  }).toInstant();
+  const actual = occursWithin(
+    Temporal.PlainDateTime.from({
+      ...feb24,
+      day: 4,
+      hour: 8,
+      minute: 0,
+    }),
+    {
+      start,
+      end,
+      uid: '123',
+      summary: 'Full day event',
+      timestamp: 123,
+    }
+  );
+  expect(actual).toBe(true);
+
+  const actual2 = occursWithin(
+    Temporal.PlainDateTime.from({
+      ...feb24,
+      day: 5,
+      hour: 8,
+      minute: 0,
+    }),
+    {
+      start,
+      end,
+      uid: '123',
+      summary: 'Full day event',
+      timestamp: 123,
+    }
+  );
+  expect(actual2).toBe(false);
 });

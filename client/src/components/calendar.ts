@@ -35,11 +35,7 @@ class CalendarElement extends HTMLElement {
           <td>${formatHour(hourIndex)}</td>
           ${calendar.weekDays
             .map((day) => {
-              let hour = day.hours[hourIndex];
-              if (hour === undefined) {
-                throw new Error('day does not have enough hours');
-              }
-              return cell(hour, day);
+              return cell(calendar.hour, hourIndex, day);
             })
             .join('')}
         </tr>`

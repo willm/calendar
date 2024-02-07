@@ -41,6 +41,7 @@ export async function getCalendar(
     throw new Error("Couldn't parse month");
   }
   return {
+    hour: now.hour,
     weekDays: days
       .map((day, i): WeekDay => {
         const highlightDay = (now.dayOfWeek % 7) - i === 0;
@@ -51,24 +52,7 @@ export async function getCalendar(
           name: `${day} ${
             now.subtract({days: (now.dayOfWeek % 7) - i}).toPlainMonthDay().day
           }`,
-          hours: Array.from({length: 24}, (_, hour) => {
-            const hourEvents = events.filter((event) => {
-              const eventStart = event.start.toZonedDateTimeISO(timeZone);
-              const eventEnd = event.end.toZonedDateTimeISO(timeZone);
-              return (
-                eventStart.day === currentDay.day &&
-                eventStart.year === currentDay.year &&
-                eventStart.month === currentDay.month &&
-                eventStart.hour >= hour &&
-                eventStart.hour < hour + 1 &&
-                eventEnd.hour <= hour + 1
-              );
-            });
-            return {
-              highlight: highlightDay && hour === now.hour,
-              events: hourEvents,
-            };
-          }),
+          events: events.filter((event) => occursWithin(currentDay, event)),
         };
       })
       .slice(1, 6),
@@ -77,4 +61,29 @@ export async function getCalendar(
     dayOfMonth,
     year: now.year,
   };
+}
+
+export function occursWithin(
+  currentDay: Temporal.PlainDateTime,
+  event: Event
+): boolean {
+  const eventStart = event.start.toZonedDateTimeISO(timeZone);
+  const eventEnd = event.end.toZonedDateTimeISO(timeZone);
+  if (
+    eventEnd.day === currentDay.day &&
+    eventEnd.year === currentDay.year &&
+    eventEnd.hour === 0 &&
+    eventEnd.minute === 0 &&
+    eventEnd.second === 0
+  ) {
+    return false;
+  }
+  return (
+    eventStart.day <= currentDay.day &&
+    eventStart.year === currentDay.year &&
+    eventStart.month === currentDay.month &&
+    eventEnd.day >= currentDay.day &&
+    eventEnd.year >= currentDay.year &&
+    eventEnd.month >= currentDay.month
+  );
 }

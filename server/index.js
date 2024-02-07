@@ -21,13 +21,14 @@ http
         console.dir(iCallBody);
         const mapped = Object.entries(iCallBody)
           .filter(([_, event]) => {
-            return event.type === 'VEVENT';
+            //return event.type === 'VEVENT';
+            return event.start;
           })
           .map(([uid, event]) => {
             return {
               uid,
               summary: event.summary,
-              timestamp: new Date(event.start).valueOf(),
+              timestamp: event.start.valueOf(),
               start: event.start,
               end: event.end,
             };

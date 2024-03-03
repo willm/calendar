@@ -14,7 +14,7 @@
     "vitest": "^1.2.2"
   },
   "scripts": {
-    "start": "npm run -w client dev & npm run -w server dev",
+    "start": "npm run -w client dev & docker-compose up",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

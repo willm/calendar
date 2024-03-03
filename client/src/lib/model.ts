@@ -7,17 +7,18 @@ export interface RemoteCalendar {
   url: string;
 }
 
-export interface Events {
-  events: SerialisedEvent[];
-}
+export type CalendarResponse = Record<
+  string,
+  {summary: string; start: Date; end: Date; rrule?: string}
+>;
 
-export interface SerialisedEvent {
+export interface APIEvent {
   uid: string;
-  calendarId: string;
   summary: string;
   timestamp: number;
   start: string;
   end: string;
+  calendarId: string;
 }
 
 export interface Event {

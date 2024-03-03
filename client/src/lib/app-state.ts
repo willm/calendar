@@ -1,8 +1,8 @@
 import {connect} from './event-db';
 import {Temporal} from '@js-temporal/polyfill';
-import type {Calendar, RemoteCalendar, SerialisedEvent} from './model';
-import * as api from './api';
-import {addCalendar} from './actions/add-calendar';
+import type {Calendar, RemoteCalendar} from './model';
+import api from './api';
+import {calendarService} from './actions/calendar-service';
 import {getCalendar} from './get-calendar';
 import {deepEqual} from './deep-equal';
 
@@ -11,6 +11,7 @@ interface AppState {
   addingCalendar: boolean;
   calendar: Calendar | undefined;
   errorMessage: string | undefined;
+  weekIncluding: Temporal.PlainDateTime;
 }
 
 const events = [
@@ -52,12 +53,23 @@ export class App {
   #state: AppState;
   private constructor() {
     this.#bus = document.createElement('div');
+
+    const search = new URLSearchParams(window.location.search);
+    const weekIncludingParam = search.get('wi');
+    let weekIncluding: Temporal.PlainDateTime;
+    try {
+      weekIncluding = Temporal.PlainDateTime.from(weekIncludingParam!);
+    } catch {
+      weekIncluding = Temporal.Now.plainDateTimeISO();
+    }
+
     this.#state = new Proxy(
       {
         refreshingCalendars: false,
         addingCalendar: false,
         calendar: undefined,
         errorMessage: undefined,
+        weekIncluding,
       },
       makeHandler(this.#bus)
     );
@@ -83,17 +95,12 @@ export class App {
       const db = await connect();
       const calendars = await db.getCalendars();
       await Promise.all(
-        calendars.map(async (c: RemoteCalendar) => {
-          const icalData = await api.addCalendar(c.url);
-          return await Promise.all(
-            icalData.events.map((e: SerialisedEvent) => {
-              e.calendarId = c.uid;
-              return db.saveEvent(e);
-            })
-          );
+        calendars.map(async (calendar: RemoteCalendar) => {
+          await calendarService(api, db).addCalendar(calendar.url, calendar);
         })
       );
     } catch (err) {
+      console.error(err);
       this.setErrorMessage((err as Error).message);
     } finally {
       this.#state.refreshingCalendars = false;
@@ -103,9 +110,12 @@ export class App {
   public async addCalendar(link: string, calendar: RemoteCalendar) {
     this.#state.addingCalendar = true;
     try {
-      await addCalendar(link, calendar);
+      const db = await connect();
+      db.saveCalendar(calendar);
+      await calendarService(api, db).addCalendar(link, calendar);
     } catch (err) {
       this.#state.addingCalendar = false;
+      console.error(err);
       this.setErrorMessage((err as Error).message);
       return;
     }
@@ -114,10 +124,7 @@ export class App {
 
   public async getCalendar() {
     const store = await connect();
-    this.#state.calendar = await getCalendar(
-      store,
-      Temporal.Now.plainDateTimeISO()
-    );
+    this.#state.calendar = await getCalendar(store, this.#state.weekIncluding);
   }
 
   public setErrorMessage(message: string | undefined) {

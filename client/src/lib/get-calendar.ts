@@ -1,6 +1,6 @@
 import {Temporal} from '@js-temporal/polyfill';
 import {days, months} from './constants.js';
-import {Calendar, WeekDay, Event, SerialisedEvent} from './model.js';
+import {Calendar, WeekDay, Event, APIEvent} from './model.js';
 import type {EventStore} from './event-db';
 
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -22,7 +22,7 @@ export async function getCalendar(
 
   const events: Event[] = (
     await db.getEventsBetween(sundayTimestamp, saturdayTimestamp)
-  ).map((e: SerialisedEvent): Event => {
+  ).map((e: APIEvent): Event => {
     return {
       ...e,
       calendar: calendars.find((c) => c.uid === e.calendarId),

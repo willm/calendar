@@ -1,4 +1,4 @@
-import {RemoteCalendar, SerialisedEvent} from './model';
+import {RemoteCalendar, APIEvent} from './model';
 const eventStoreName = 'events';
 const dbName = 'calendar';
 const calendarStoreName = 'calendar';
@@ -33,8 +33,8 @@ export async function connect(): Promise<EventStore> {
 export interface EventStore {
   getCalendars: () => Promise<RemoteCalendar[]>;
   saveCalendar: (calendar: RemoteCalendar) => Promise<void>;
-  saveEvent: (event: SerialisedEvent) => Promise<void>;
-  getEventsBetween: (start: number, end: number) => Promise<SerialisedEvent[]>;
+  saveEvent: (event: APIEvent) => Promise<void>;
+  getEventsBetween: (start: number, end: number) => Promise<APIEvent[]>;
 }
 
 class IndexedDBEventStore implements EventStore {
@@ -75,14 +75,11 @@ class IndexedDBEventStore implements EventStore {
     return this.#save(calendarStoreName, calendar);
   }
 
-  async saveEvent(event: SerialisedEvent): Promise<void> {
+  async saveEvent(event: APIEvent): Promise<void> {
     return this.#save(eventStoreName, event);
   }
 
-  async getEventsBetween(
-    start: number,
-    end: number
-  ): Promise<SerialisedEvent[]> {
+  async getEventsBetween(start: number, end: number): Promise<APIEvent[]> {
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(eventStoreName);
       const events = transaction.objectStore(eventStoreName);

@@ -19,15 +19,20 @@ test('A plain date is mapped to a calendar', async () => {
       return Promise.resolve();
     },
   };
-  const now = Temporal.PlainDateTime.from({
+  const baseDay = Temporal.PlainDateTime.from({
     day: 2,
     month: 2,
     year: 2024,
     hour: 19,
     minute: 35,
   });
+  const now = Temporal.PlainDateTime.from({
+    day: 2,
+    month: 2,
+    year: 2024,
+  });
 
-  const calendar = await getCalendar(mockStore, now);
+  const calendar = await getCalendar(mockStore, baseDay, now);
 
   expect(calendar).toMatchObject({
     dayOfMonth: 2,

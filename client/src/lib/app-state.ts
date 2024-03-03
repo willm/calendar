@@ -42,6 +42,7 @@ function makeHandler(bus: HTMLDivElement): ProxyHandler<AppState> {
         state[key] = value;
         bus.dispatchEvent(new CustomEvent('calendar', {detail: value}));
       }
+
       return true;
     },
   };
@@ -129,5 +130,21 @@ export class App {
 
   public setErrorMessage(message: string | undefined) {
     this.#state.errorMessage = message;
+  }
+
+  get nextWeek(): string {
+    return this.#state.weekIncluding
+      .add(
+        new Temporal.Duration(0, 0, 0, 8 - this.#state.weekIncluding.dayOfWeek)
+      )
+      .toString();
+  }
+
+  get previousWeek(): string {
+    return this.#state.weekIncluding
+      .add(
+        new Temporal.Duration(0, 0, 0, 0 - this.#state.weekIncluding.dayOfWeek)
+      )
+      .toString();
   }
 }

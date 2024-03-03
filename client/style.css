@@ -103,3 +103,34 @@ output {
   background-color: #f98484;
   color: rgb(88, 21, 28);
 }
+
+button, .button {
+  font-size: 26px;
+  background-color: inherit;
+  color: inherit;
+  border: none;
+  vertical-align: middle;
+  cursor: pointer;
+  text-align: center;
+  vertical-align: middle;
+}
+
+button:hover, .button:hover {
+  color: var(--grey-light);
+}
+
+.button__large {
+  width: 1.5em;
+}
+
+.button__medium {
+  width: 1em;
+}
+
+a {
+  text-decoration: none;
+}
+
+button:focus-visible {
+  border: none;
+}

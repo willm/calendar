@@ -16,7 +16,8 @@ class Alert extends HTMLElement {
     msg.setAttribute('id', 'error-message');
     this.classList.add('alert__error');
 
-    const button = document.createElement('cal-button');
+    const button = document.createElement('button');
+    button.classList.add('button__large');
     button.setAttribute('size', 'medium');
     button.addEventListener('click', () => App.get().setErrorMessage(''));
     button.innerHTML = `<cal-icon type="close"></cal-icon>`;

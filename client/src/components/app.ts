@@ -2,7 +2,6 @@ import './alert';
 import './header/header';
 import './icon';
 import './calendar';
-import './button';
 
 class App extends HTMLElement {
   connectedCallback() {

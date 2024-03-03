@@ -4,8 +4,8 @@ import '../icon';
 
 const loader = '<div class="loader"/>';
 
-function refreshButton(app: App, doc: ShadowRoot) {
-  const button = doc.getElementById('refresh-button');
+function refreshButton(app: App, doc: HTMLElement) {
+  const button = doc.querySelector('#refresh-button');
   button?.addEventListener('click', () => {
     app.refreshCalendars();
   });
@@ -15,11 +15,11 @@ function refreshButton(app: App, doc: ShadowRoot) {
   });
 }
 
-function registerAddCalendarButton(app: App, doc: ShadowRoot) {
-  const dialog = doc.getElementById('add-calendar-modal') as HTMLDialogElement;
-  const closeButton = doc.getElementById('close-calendar-modal');
-  const addCalButton = doc.getElementById('add-calendar-button');
-  const submitCalButton = doc.getElementById('add-calendar-submit-button');
+function registerAddCalendarButton(app: App, doc: HTMLElement) {
+  const dialog = doc.querySelector('#add-calendar-modal') as HTMLDialogElement;
+  const closeButton = doc.querySelector('#close-calendar-modal');
+  const addCalButton = doc.querySelector('#add-calendar-button');
+  const submitCalButton = doc.querySelector('#add-calendar-submit-button');
   app.on('addingCalendar', (evt) => {
     const isAdding = (evt as CustomEvent).detail as boolean;
     submitCalButton!.innerHTML = isAdding ? loader : 'Add';
@@ -27,20 +27,20 @@ function registerAddCalendarButton(app: App, doc: ShadowRoot) {
       dialog.close();
     }
   });
-  const linkInput = doc.getElementById('ical-link') as HTMLInputElement;
+  const linkInput = doc.querySelector('#ical-link') as HTMLInputElement;
   closeButton?.addEventListener('click', () => dialog?.close());
   addCalButton?.addEventListener('click', () => {
     dialog?.showModal();
     linkInput.focus();
   });
 
-  const form = doc.getElementById('add-calendar-form') as HTMLFormElement;
+  const form = doc.querySelector('#add-calendar-form') as HTMLFormElement;
   form?.addEventListener('submit', async (evt) => {
     evt.preventDefault();
     const link = linkInput?.value;
-    const name = (doc.getElementById('calendar-name') as HTMLInputElement)
+    const name = (doc.querySelector('#calendar-name') as HTMLInputElement)
       ?.value;
-    const color = (doc.getElementById('calendar-color') as HTMLInputElement)
+    const color = (doc.querySelector('#calendar-color') as HTMLInputElement)
       ?.value;
     const calendar: RemoteCalendar = {
       uid: crypto.randomUUID().toString(),
@@ -57,22 +57,28 @@ class HeaderElement extends HTMLElement {
 
   constructor() {
     super();
-    const template = document.getElementById('header') as HTMLTemplateElement;
-    const templateContent = template.content;
-
-    const shadowRoot = this.attachShadow({mode: 'open'});
-    const element = templateContent.cloneNode(true);
-
-    shadowRoot.appendChild(element);
   }
 
   connectedCallback() {
+    const template = document.getElementById('header') as HTMLTemplateElement;
+    const templateContent = template.content;
+
+    const element = templateContent.cloneNode(true);
+
+    this.appendChild(element);
     const app = App.get();
-    refreshButton(app, this.shadowRoot!);
-    registerAddCalendarButton(app, this.shadowRoot!);
+    refreshButton(app, this);
+    registerAddCalendarButton(app, this);
+
+    const nextWeekLink = this.querySelector('#next-week');
+    nextWeekLink?.setAttribute('href', `/?wi=${app.nextWeek}`);
+
+    const previousWeekLink = this.querySelector('#previous-week');
+    previousWeekLink?.setAttribute('href', `/?wi=${app.previousWeek}`);
+
     app.on('calendar', (evt) => {
       const calendar = (evt as CustomEvent).detail as Calendar;
-      const heading = this.shadowRoot!.querySelector('h1');
+      const heading = this.querySelector('h1');
       heading!.innerText = `${calendar.month} ${calendar.year}`;
     });
   }

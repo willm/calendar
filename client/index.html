@@ -19,9 +19,9 @@
               media="screen"
             />
             <h2>Add a new calendar</h2>
-            <cal-button size="medium" id="close-calendar-modal">
+            <button class="button__medium" id="close-calendar-modal">
               <cal-icon type="close"></cal-icon>
-            </cal-button>
+            </button>
           </header>
           <div>
             <form id="add-calendar-form">
@@ -36,45 +36,17 @@
           </div>
         </dialog>
         <div class="btn-group">
-          <cal-button id="refresh-button">
+          <a class="button button__large" id="previous-week"> &lt; </a>
+          <a class="button button__large" href="/"> . </a>
+          <a class="button button__large" id="next-week"> &gt; </a>
+          <button class="button__large" id="refresh-button">
             <cal-icon type="refresh"></cal-icon>
-          </cal-button>
-          <cal-button id="add-calendar-button">
+          </button>
+          <button class="button__large" id="add-calendar-button">
             <cal-icon type="plus"></cal-icon>
-          </cal-button>
+          </button>
         </div>
       </header>
-    </template>
-    <template id="button">
-      <style>
-        button {
-          font-size: 26px;
-          background-color: inherit;
-          color: inherit;
-          border: none;
-          vertical-align: middle;
-          cursor: pointer;
-        }
-
-        button:hover {
-          color: var(--grey-light);
-        }
-
-        .button__large {
-          width: 1.5em;
-        }
-
-        .button__medium {
-          width: 1em;
-        }
-
-        button:focus-visible {
-          border: none;
-        }
-      </style>
-      <button>
-        <slot></slot>
-      </button>
     </template>
     <script type="module" src="src/script.ts" defer></script>
   </body>

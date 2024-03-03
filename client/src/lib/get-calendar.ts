@@ -7,17 +7,21 @@ const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export async function getCalendar(
   db: EventStore,
-  now: Temporal.PlainDateTime
+  baseDay: Temporal.PlainDateTime,
+  now = Temporal.Now.plainDateTimeISO()
 ): Promise<Calendar> {
   const calendars = await db.getCalendars();
 
   const sunday = Temporal.Instant.from(
-    now.subtract({days: now.dayOfWeek}).toZonedDateTime(timeZone).toInstant()
+    baseDay
+      .subtract({days: baseDay.dayOfWeek})
+      .toZonedDateTime(timeZone)
+      .toInstant()
   );
   const sundayTimestamp = sunday.epochMilliseconds;
 
   const saturdayTimestamp = Temporal.Instant.from(
-    now.add({days: 6}).toZonedDateTime(timeZone).toInstant()
+    baseDay.add({days: 6}).toZonedDateTime(timeZone).toInstant()
   ).epochMilliseconds;
 
   const events: Event[] = (
@@ -31,27 +35,30 @@ export async function getCalendar(
     };
   });
 
-  const dayOfMonth = now.toPlainMonthDay().day;
-  const dayOfWeek = days[now.dayOfWeek % 7];
+  const dayOfMonth = baseDay.toPlainMonthDay().day;
+  const dayOfWeek = days[baseDay.dayOfWeek % 7];
   if (dayOfWeek === undefined) {
     throw new Error("Couldn't parse day of the week");
   }
-  const month = months[now.month - 1];
+  const month = months[baseDay.month - 1];
   if (month === undefined) {
     throw new Error("Couldn't parse month");
   }
   return {
-    hour: now.hour,
+    hour: baseDay.hour,
     weekDays: days
       .map((day, i): WeekDay => {
-        const highlightDay = (now.dayOfWeek % 7) - i === 0;
-        const currentDay = now.subtract({days: (now.dayOfWeek % 7) - i});
+        const currentDay = baseDay.subtract({
+          days: (baseDay.dayOfWeek % 7) - i,
+        });
+        const highlightDay =
+          currentDay.day === now.day &&
+          currentDay.month === now.month &&
+          currentDay.year === now.year;
 
         return {
           highlight: highlightDay,
-          name: `${day} ${
-            now.subtract({days: (now.dayOfWeek % 7) - i}).toPlainMonthDay().day
-          }`,
+          name: `${day} ${currentDay.toPlainMonthDay().day}`,
           events: events.filter((event) => occursWithin(currentDay, event)),
         };
       })
@@ -59,7 +66,7 @@ export async function getCalendar(
     dayOfWeek,
     month,
     dayOfMonth,
-    year: now.year,
+    year: baseDay.year,
   };
 }
 

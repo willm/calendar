@@ -1,5 +1,5 @@
 import {App} from '../lib/app-state';
-import {cell} from '../lib/cell-viaw';
+import {cell} from './cell-view';
 import {Calendar} from '../lib/model';
 
 function formatHour(hourIndex: number): string {

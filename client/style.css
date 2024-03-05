@@ -104,6 +104,7 @@ output {
 }
 
 button, .button {
+  font-weight: bold;
   font-size: 26px;
   background-color: inherit;
   color: inherit;

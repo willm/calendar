@@ -143,7 +143,12 @@ export class App {
   get previousWeek(): string {
     return this.#state.weekIncluding
       .add(
-        new Temporal.Duration(0, 0, 0, 0 - this.#state.weekIncluding.dayOfWeek)
+        new Temporal.Duration(
+          0,
+          0,
+          0,
+          0 - (this.#state.weekIncluding.dayOfWeek + 1)
+        )
       )
       .toString();
   }

@@ -37,6 +37,13 @@ tbody {
   margin: auto;
 }
 
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--grey-dark);
+}
+
 td {
   height: 5em;
   overflow: hidden;

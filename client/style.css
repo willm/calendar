@@ -104,7 +104,6 @@ output {
 
 button, .button {
   font-weight: bold;
-  font-size: 26px;
   background-color: inherit;
   color: inherit;
   border: none;
@@ -120,10 +119,13 @@ button:hover, .button:hover {
 
 .button__large {
   width: 1.5em;
+  height: 1.5em;
+  font-size: 26px;
 }
 
 .button__medium {
   width: 1em;
+  font-size: 20px;
 }
 
 a {

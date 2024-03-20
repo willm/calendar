@@ -5,6 +5,7 @@ import api from './api';
 import {calendarService} from './actions/calendar-service';
 import {getCalendar} from './get-calendar';
 import {deepEqual} from './deep-equal';
+import {next, previous} from './week-navigation';
 
 interface AppState {
   refreshingCalendars: boolean;
@@ -133,23 +134,10 @@ export class App {
   }
 
   get nextWeek(): string {
-    return this.#state.weekIncluding
-      .add(
-        new Temporal.Duration(0, 0, 0, 8 - this.#state.weekIncluding.dayOfWeek)
-      )
-      .toString();
+    return next(this.#state.weekIncluding);
   }
 
   get previousWeek(): string {
-    return this.#state.weekIncluding
-      .add(
-        new Temporal.Duration(
-          0,
-          0,
-          0,
-          0 - (this.#state.weekIncluding.dayOfWeek + 1)
-        )
-      )
-      .toString();
+    return previous(this.#state.weekIncluding);
   }
 }

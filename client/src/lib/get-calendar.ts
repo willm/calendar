@@ -5,29 +5,32 @@ import type {EventStore} from './event-db';
 import {getCellSpans} from './parse-calendar/cell-spans.js';
 import {occursWithinDay, occursWithinHour} from './ranges.js';
 
-export async function getCalendar(
-  db: EventStore,
-  baseDay: Temporal.ZonedDateTime,
-  now: Temporal.PlainDateTime,
-  formatOpts: Intl.ResolvedDateTimeFormatOptions
-): Promise<Calendar> {
-  const calendars = await db.getCalendars();
-
+function getSundayTimestamp(baseDay: Temporal.ZonedDateTime): number {
   const sunday = Temporal.Instant.from(
     baseDay.subtract({days: baseDay.dayOfWeek}).toInstant()
   );
-  const sundayTimestamp = sunday.epochMilliseconds;
+  return sunday.epochMilliseconds;
+}
 
-  const saturdayTimestamp = Temporal.Instant.from(
-    baseDay.add({days: 6}).toInstant()
-  ).epochMilliseconds;
+function getSaturdayTimestamp(baseDay: Temporal.ZonedDateTime): number {
+  return Temporal.Instant.from(baseDay.add({days: 6}).toInstant())
+    .epochMilliseconds;
+}
 
-  const apiEvents: APIEvent[] = await db.getEventsBetween(
+async function getEventsForWeekIncluding(
+  db: EventStore,
+  baseDay: Temporal.ZonedDateTime
+): Promise<Event[]> {
+  const calendars = await db.getCalendars();
+
+  const sundayTimestamp = getSundayTimestamp(baseDay);
+  const saturdayTimestamp = getSaturdayTimestamp(baseDay);
+
+  const apiEvents = await db.getEventsBetween(
     sundayTimestamp,
     saturdayTimestamp
   );
-
-  const events = apiEvents.map((e: APIEvent): Event => {
+  return apiEvents.map((e: APIEvent): Event => {
     return {
       ...e,
       calendar: calendars.find((c) => c.uid === e.calendarId),
@@ -35,48 +38,73 @@ export async function getCalendar(
       end: Temporal.Instant.from(e.end),
     };
   });
+}
 
-  const dayOfMonth = baseDay.toPlainMonthDay().day;
+function getDayOfWeekName(baseDay: Temporal.ZonedDateTime): string {
   const dayOfWeek = days[baseDay.dayOfWeek % 7];
   if (dayOfWeek === undefined) {
     throw new Error("Couldn't parse day of the week");
   }
+  return dayOfWeek;
+}
+
+function getMonthName(baseDay: Temporal.ZonedDateTime): string {
   const month = months[baseDay.month - 1];
   if (month === undefined) {
     throw new Error("Couldn't parse month");
   }
+  return month;
+}
+
+export async function getCalendar(
+  db: EventStore,
+  baseDay: Temporal.ZonedDateTime,
+  now: Temporal.PlainDateTime,
+  formatOpts: Intl.ResolvedDateTimeFormatOptions
+): Promise<Calendar> {
+  const events = await getEventsForWeekIncluding(db, baseDay);
+
+  const dayOfMonth = baseDay.toPlainMonthDay().day;
+  const dayOfWeek = getDayOfWeekName(baseDay);
+  const monthName = getMonthName(baseDay);
   return {
     hour: baseDay.hour,
     weekDays: days
-      .map((day, i): WeekDay => {
+      .map((_, i): WeekDay => {
         const currentDay = baseDay.subtract({
           days: (baseDay.dayOfWeek % 7) - i,
         });
-        const highlightDay =
-          currentDay.day === now.day &&
-          currentDay.month === now.month &&
-          currentDay.year === now.year;
-
-        return {
-          highlight: highlightDay,
-          name: `${day} ${currentDay.toPlainMonthDay().day}`,
-          cells: mapCells(
-            baseDay,
-            {
-              highlight: highlightDay,
-              events: events.filter((event) =>
-                occursWithinDay(currentDay, event)
-              ),
-            },
-            formatOpts
-          ),
-        };
+        return mapDay(baseDay, currentDay, now, events, formatOpts);
       })
       .slice(1, 6),
     dayOfWeek,
-    month,
+    month: monthName,
     dayOfMonth,
     year: baseDay.year,
+  };
+}
+
+function mapDay(
+  today: Temporal.ZonedDateTime,
+  day: Temporal.ZonedDateTime,
+  now: Temporal.PlainDateTime,
+  events: Event[],
+  formatOpts: Intl.ResolvedDateTimeFormatOptions
+): WeekDay {
+  const highlightDay =
+    day.day === now.day && day.month === now.month && day.year === now.year;
+
+  return {
+    highlight: highlightDay,
+    name: `${days[day.dayOfWeek]} ${day.toPlainMonthDay().day}`,
+    cells: mapCells(
+      today,
+      {
+        highlight: highlightDay,
+        events: events.filter((event) => occursWithinDay(day, event)),
+      },
+      formatOpts
+    ),
   };
 }
 

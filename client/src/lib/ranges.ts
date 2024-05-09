@@ -1,5 +1,7 @@
 import {Temporal} from '@js-temporal/polyfill';
 
+type Range = {start: Temporal.Instant; end: Temporal.Instant};
+
 export function occursWithinHour(
   currentTime: Temporal.ZonedDateTime,
   event: Range
@@ -14,8 +16,6 @@ export function occursWithinHour(
     {start: event.start, end: event.end}
   );
 }
-
-type Range = {start: Temporal.Instant; end: Temporal.Instant};
 
 function occursWithin(range: Range, query: Range): boolean {
   const startsBeforeEnd = query.start.since(range.end).sign == -1;

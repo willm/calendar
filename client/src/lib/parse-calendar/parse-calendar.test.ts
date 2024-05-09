@@ -1,46 +1,28 @@
-import {getCalendar, mapCells} from './get-calendar';
+import {parseCalendar, mapCells} from './parse-calendar.js';
 import {Temporal} from '@js-temporal/polyfill';
-import type {APIEvent, RemoteCalendar} from './model';
-import type {EventStore} from './event-db';
+import type {Event, RemoteCalendar} from '../model';
 import {expect, test} from 'vitest';
 
-function getMockStore(eventsBetween: APIEvent[]) {
-  const mockStore: EventStore = {
-    getCalendars() {
-      return Promise.resolve([]);
-    },
-    getEventsBetween(_start: number, _end: number) {
-      return Promise.resolve(eventsBetween);
-    },
-    saveEvent(_event) {
-      return Promise.resolve();
-    },
-    saveCalendar(_calendar: RemoteCalendar) {
-      return Promise.resolve();
-    },
-  };
-  return mockStore;
-}
-
-test('A plain date is mapped to a calendar', async () => {
-  const mockStore: EventStore = getMockStore([]);
+test('A plain date is mapped to a calendar', () => {
+  const timeZone = 'UTC';
   const baseDay = Temporal.ZonedDateTime.from({
     day: 2,
     month: 2,
     year: 2024,
     hour: 19,
     minute: 35,
-    timeZone: 'UTC',
+    timeZone,
   });
-  const now = Temporal.PlainDateTime.from({
+  const now = Temporal.ZonedDateTime.from({
     day: 2,
     month: 2,
     year: 2024,
+    timeZone,
   });
-  const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone: 'UTC'});
+  const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone});
 
-  const calendar = await getCalendar(
-    mockStore,
+  const calendar = parseCalendar(
+    [],
     baseDay,
     now,
     formatOpts.resolvedOptions()
@@ -67,70 +49,79 @@ test('A plain date is mapped to a calendar', async () => {
     false,
     true,
   ]);
-  expect(calendar.hour).toBe(19);
   expect(calendar.weekDays.length).toBe(5);
 });
 
-test('a real life week', async () => {
-  const events: APIEvent[] = [
+const instant = (s: string) => Temporal.Instant.from(s);
+const rc = (name: string): RemoteCalendar => ({
+  color: 'red',
+  uid: 'foo',
+  name,
+  url: 'https://example.com',
+});
+const remoteCal = rc('abc');
+
+test('a real life week', () => {
+  const events: Event[] = [
     {
       uid: '1',
-      calendarId: 'abc',
+      calendar: remoteCal,
       summary: 'lunch event',
       timestamp: 1713351600000,
-      end: '2024-04-17T12:00:00.000Z',
-      start: '2024-04-17T11:00:00.000Z',
+      end: Temporal.Instant.from('2024-04-17T12:00:00.000Z'),
+      start: Temporal.Instant.from('2024-04-17T11:00:00.000Z'),
     },
     {
       uid: '2',
-      calendarId: 'abc',
+      calendar: remoteCal,
       summary: 'company update',
       timestamp: 1713351600000,
-      end: '2024-04-18T16:30:00.000Z',
-      start: '2024-04-18T15:30:00.000Z',
+      end: instant('2024-04-18T16:30:00.000Z'),
+      start: instant('2024-04-18T15:30:00.000Z'),
     },
     {
       uid: '3',
-      calendarId: 'abc',
+      calendar: remoteCal,
       summary: 'leaving drinks',
       timestamp: 1713544200000,
-      end: '2024-04-19T22:00:00.000Z',
-      start: '2024-04-19T16:30:00.000Z',
+      end: instant('2024-04-19T22:00:00.000Z'),
+      start: instant('2024-04-19T16:30:00.000Z'),
     },
     {
       uid: '4',
-      calendarId: 'abc',
+      calendar: remoteCal,
       summary: 'technical call',
       timestamp: 1713771000000,
-      end: '2024-04-22T08:00:00.000Z',
-      start: '2024-04-22T07:30:00.000Z',
+      end: instant('2024-04-22T08:00:00.000Z'),
+      start: instant('2024-04-22T07:30:00.000Z'),
     },
     {
       uid: '5',
-      calendarId: 'abc',
+      calendar: remoteCal,
       summary: 'security workshop',
       timestamp: 1713803400000,
-      end: '2024-04-22T18:30:00.000Z',
-      start: '2024-04-22T16:30:00.000Z',
+      end: instant('2024-04-22T18:30:00.000Z'),
+      start: instant('2024-04-22T16:30:00.000Z'),
     },
   ];
-  const mockStore = getMockStore(events);
+  const timeZone = 'UTC';
   const baseDay = Temporal.ZonedDateTime.from({
+    day: 19,
+    month: 4,
+    year: 2024,
+    timeZone,
+  });
+  const now = Temporal.ZonedDateTime.from({
     day: 19,
     month: 4,
     year: 2024,
     hour: 9,
     minute: 35,
-    timeZone: 'UTC',
-  });
-  const now = Temporal.PlainDateTime.from({
-    day: 19,
-    month: 4,
-    year: 2024,
+    timeZone,
   });
   const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone: 'UTC'});
-  const calendar = await getCalendar(
-    mockStore,
+  const calendar = parseCalendar(
+    events,
     baseDay,
     now,
     formatOpts.resolvedOptions()

@@ -132,11 +132,13 @@ export class App {
 
   public async getCalendar() {
     const store = await connect();
+    const fmtOpts = Intl.DateTimeFormat().resolvedOptions();
+    const now = Temporal.Now.zonedDateTimeISO(fmtOpts.timeZone);
     this.#state.calendar = await getCalendar(
       store,
       this.#state.weekIncluding,
-      Temporal.Now.plainDateTimeISO(),
-      Intl.DateTimeFormat().resolvedOptions()
+      now,
+      fmtOpts
     );
   }
 

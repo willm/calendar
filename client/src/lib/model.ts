@@ -40,7 +40,6 @@ export interface Calendar {
   weekDays: WeekDay[];
   dayOfWeek: string;
   dayOfMonth: number;
-  hour: number;
   month: string;
   year: number;
 }

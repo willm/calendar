@@ -9,8 +9,6 @@ test('A plain date is mapped to a calendar', () => {
     day: 2,
     month: 2,
     year: 2024,
-    hour: 19,
-    minute: 35,
     timeZone,
   });
   const now = Temporal.ZonedDateTime.from({
@@ -18,6 +16,8 @@ test('A plain date is mapped to a calendar', () => {
     month: 2,
     year: 2024,
     timeZone,
+    hour: 19,
+    minute: 35,
   });
   const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone});
 
@@ -60,6 +60,55 @@ const rc = (name: string): RemoteCalendar => ({
   url: 'https://example.com',
 });
 const remoteCal = rc('abc');
+
+test('an other week', () => {
+  const events: Event[] = [
+    {
+      uid: '0mm6qkt8j8qt78kmid96os5065@google.com',
+      summary: '[BBL] La gestion des tâches par Augustin G.',
+      timestamp: 1717412400000,
+      start: instant('2024-06-03T11:00:00Z'),
+      end: instant('2024-06-03T12:00:00Z'),
+      calendar: remoteCal,
+    },
+    {
+      uid: '0stni020stqbbcom0m4spd5csq@google.com',
+      summary: 'Summer Party Lyon',
+      timestamp: 1717691400000,
+      start: instant('2024-06-06T16:30:00Z'),
+      end: instant('2024-06-06T20:30:00Z'),
+      calendar: remoteCal,
+    },
+    {
+      uid: '12k42rui9mksbi6vu5eavop80b@google.com',
+      summary: '[SAVE THE DATE - Soirée CSE] Soirée Disney 🧜‍♀️🧞‍♂️🏰',
+      timestamp: 1718121600000,
+      start: instant('2024-06-11T16:00:00Z'),
+      end: instant('2024-06-11T20:30:00Z'),
+      calendar: remoteCal,
+    },
+  ];
+  const baseDay = Temporal.ZonedDateTime.from(
+    '2024-06-06T14:12:50.653970642Z[UTC]'
+  );
+  const now = Temporal.ZonedDateTime.from(
+    '2024-05-09T14:12:50.653970642Z[UTC]'
+  );
+  const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone: 'UTC'});
+  debugger;
+  const calendar = parseCalendar(
+    events,
+    baseDay,
+    now,
+    formatOpts.resolvedOptions()
+  );
+
+  debugger;
+  expect(calendar.weekDays[0]?.cells[11]?.events.length).toEqual(1);
+  expect(calendar.weekDays[3]?.cells[16]?.events.length).toEqual(1);
+  expect(calendar.weekDays[3]?.cells[16]?.rowSpan).toEqual(4);
+  expect(calendar.weekDays[3]?.cells[16]?.events[0]?.insetTop).toEqual(12.5);
+});
 
 test('a real life week', () => {
   const events: Event[] = [
@@ -132,13 +181,21 @@ test('a real life week', () => {
 });
 
 test('mapping cells from a day with no events returns 24 cells', () => {
+  const now = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
+  const baseDay = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
   const cells = mapCells(
-    Temporal.ZonedDateTime.from({
-      year: 2024,
-      month: 3,
-      day: 21,
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    }),
+    baseDay,
+    now,
     {highlight: true, events: []},
     Intl.DateTimeFormat().resolvedOptions()
   );
@@ -153,13 +210,21 @@ test('mapping cells from a day with no events returns 24 cells', () => {
 
 test('an event lasting a full hour is contained to 1 cell', () => {
   const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone: 'UTC'});
+  const now = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: 'UTC',
+  });
+  const baseDay = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: 'UTC',
+  });
   const cells = mapCells(
-    Temporal.ZonedDateTime.from({
-      year: 2024,
-      month: 3,
-      day: 21,
-      timeZone: 'UTC',
-    }),
+    baseDay,
+    now,
     {
       highlight: true,
       events: [
@@ -181,13 +246,21 @@ test('an event lasting a full hour is contained to 1 cell', () => {
 
 test('events happening at the same time are in the same cell', () => {
   const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone: 'UTC'});
+  const now = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: 'UTC',
+  });
+  const baseDay = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: 'UTC',
+  });
   const cells = mapCells(
-    Temporal.ZonedDateTime.from({
-      year: 2024,
-      month: 3,
-      day: 21,
-      timeZone: 'UTC',
-    }),
+    baseDay,
+    now,
     {
       highlight: false,
       events: [
@@ -216,13 +289,21 @@ test('events happening at the same time are in the same cell', () => {
 
 test('a day containing events lasting more than an hour merges cells', () => {
   const formatOpts = new Intl.DateTimeFormat('en-GB', {timeZone: 'UTC'});
+  const baseDay = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: 'UTC',
+  });
+  const now = Temporal.ZonedDateTime.from({
+    year: 2024,
+    month: 3,
+    day: 21,
+    timeZone: 'UTC',
+  });
   const cells = mapCells(
-    Temporal.ZonedDateTime.from({
-      year: 2024,
-      month: 3,
-      day: 21,
-      timeZone: 'UTC',
-    }),
+    baseDay,
+    now,
     {
       highlight: false,
       events: [

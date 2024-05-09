@@ -35,6 +35,7 @@ tbody {
   margin: 0;
   border: none;
   margin: auto;
+  height: 100%;
 }
 
 thead {
@@ -109,7 +110,8 @@ output {
   color: rgb(88, 21, 28);
 }
 
-button, .button {
+button,
+.button {
   font-weight: bold;
   background-color: inherit;
   color: inherit;
@@ -120,7 +122,8 @@ button, .button {
   vertical-align: middle;
 }
 
-button:hover, .button:hover {
+button:hover,
+.button:hover {
   color: var(--grey-light);
 }
 

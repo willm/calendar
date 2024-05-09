@@ -16,7 +16,6 @@ export async function addCalendar(
   const events: APIEvent[] = Object.entries(icalData)
     .filter(([_, event]) => event.start)
     .map(([uid, event]) => {
-      console.log(event);
       return {
         uid,
         summary: event.summary,

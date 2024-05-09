@@ -59,15 +59,17 @@ function mapDay(
   formatOpts: Intl.ResolvedDateTimeFormatOptions
 ): WeekDay {
   const highlightDay = areTheSameDay(dayOfWeek, now);
+  const dayEvents = events.filter((event) => occursWithinDay(dayOfWeek, event));
 
   return {
     highlight: highlightDay,
     name: `${days[dayOfWeek.dayOfWeek]} ${dayOfWeek.toPlainMonthDay().day}`,
     cells: mapCells(
+      dayOfWeek,
       now,
       {
         highlight: highlightDay,
-        events: events.filter((event) => occursWithinDay(dayOfWeek, event)),
+        events: dayEvents,
       },
       formatOpts
     ),
@@ -75,11 +77,12 @@ function mapDay(
 }
 
 export function mapCells(
+  dayOfWeek: Temporal.ZonedDateTime,
   now: Temporal.ZonedDateTime,
   day: {highlight: boolean; events: Event[]},
   formatOpts: Intl.ResolvedDateTimeFormatOptions
 ): CellData[] {
-  const cellSpans = getCellSpans(day.events, now, formatOpts);
+  const cellSpans = getCellSpans(day.events, dayOfWeek, formatOpts);
   return cellSpans.map((eventSpan): CellData => {
     const classes: string[] = [];
     if (day.highlight) {
@@ -97,7 +100,9 @@ export function mapCells(
     const events = eventsInHour.map((e) => {
       const duration = e.end.since(e.start).total('minutes');
       const height = Math.min(100, (duration / 60) * 100);
-      const insetTop = (e.start.toZonedDateTime(formatOpts).minute / 60) * 100;
+      const insetTop =
+        ((e.start.toZonedDateTime(formatOpts).minute / 60) * 100) /
+        eventSpan.span;
       const color = e.calendar?.color || 'yellow';
       return {color, height, insetTop, ...e};
     });

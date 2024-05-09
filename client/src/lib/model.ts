@@ -33,7 +33,7 @@ export interface Event {
 export interface WeekDay {
   highlight: boolean;
   name: string;
-  events: Event[];
+  cells: CellData[];
 }
 
 export interface Calendar {
@@ -43,4 +43,10 @@ export interface Calendar {
   hour: number;
   month: string;
   year: number;
+}
+
+export interface CellData {
+  classes: string[];
+  events: (Event & {color: string; height: number; insetTop: number})[];
+  rowSpan: number;
 }

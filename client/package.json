@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "debug": "vitest --inspect-brk --pool threads --poolOptions.threads.singleThread",
     "test": "vitest",
     "lint": "prettier -c ../prettierrc.json --check .",
     "format": "prettier  -c ../prettierrc.json --write .",

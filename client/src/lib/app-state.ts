@@ -12,7 +12,7 @@ interface AppState {
   addingCalendar: boolean;
   calendar: Calendar | undefined;
   errorMessage: string | undefined;
-  weekIncluding: Temporal.PlainDateTime;
+  weekIncluding: Temporal.ZonedDateTime;
 }
 
 const events = [
@@ -58,11 +58,17 @@ export class App {
 
     const search = new URLSearchParams(window.location.search);
     const weekIncludingParam = search.get('wi');
-    let weekIncluding: Temporal.PlainDateTime;
-    try {
-      weekIncluding = Temporal.PlainDateTime.from(weekIncludingParam!);
-    } catch {
-      weekIncluding = Temporal.Now.plainDateTimeISO();
+    let weekIncluding: Temporal.ZonedDateTime;
+    weekIncluding = Temporal.Now.zonedDateTimeISO();
+    if (weekIncludingParam) {
+      try {
+        weekIncluding = Temporal.Instant.from(
+          weekIncludingParam!
+        ).toZonedDateTimeISO('UTC');
+      } catch (error) {
+        console.error(error);
+        weekIncluding = Temporal.Now.zonedDateTimeISO();
+      }
     }
 
     this.#state = new Proxy(
@@ -126,7 +132,12 @@ export class App {
 
   public async getCalendar() {
     const store = await connect();
-    this.#state.calendar = await getCalendar(store, this.#state.weekIncluding);
+    this.#state.calendar = await getCalendar(
+      store,
+      this.#state.weekIncluding,
+      Temporal.Now.instant(),
+      Intl.DateTimeFormat().resolvedOptions()
+    );
   }
 
   public setErrorMessage(message: string | undefined) {

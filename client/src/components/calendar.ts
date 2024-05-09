@@ -1,6 +1,6 @@
 import {App} from '../lib/app-state';
 import {cell} from './cell-view';
-import {Calendar} from '../lib/model';
+import type {Calendar} from '../lib/model';
 
 function formatHour(hourIndex: number): string {
   return hourIndex.toString().padStart(2, '0') + ':00';
@@ -35,7 +35,10 @@ class CalendarElement extends HTMLElement {
           <td>${formatHour(hourIndex)}</td>
           ${calendar.weekDays
             .map((day) => {
-              return cell(calendar.hour, hourIndex, day);
+              if (day.cells[hourIndex]) {
+                return cell(day.cells[hourIndex]!);
+              }
+              return '<td/>';
             })
             .join('')}
         </tr>`

@@ -1,25 +1,17 @@
-import {WeekDay} from '../lib/model';
+import type {CellData} from '../lib/model';
 
-export function cell(currentHour: number, hour: number, day: WeekDay): string {
+export function cell(cellData: CellData): string {
+  const rowspan = cellData.rowSpan;
+
   const element = document.createElement('td');
-  if (day.highlight) {
-    element.classList.add('current-day');
-  }
-  if (currentHour === hour && day.highlight) {
-    element.classList.add('current-time');
-  }
+  element.classList.add(...cellData.classes);
+  element.setAttribute('rowspan', rowspan.toString());
 
-  const timeZone = Intl.DateTimeFormat().resolvedOptions();
-  element.innerHTML = `<ul style="list-style-type: none">${day.events
-    .filter((e) => e.start.toZonedDateTime(timeZone).hour === hour)
-    .map((e) => {
-      const duration = e.end.since(e.start).total('minutes');
-      const height = Math.min(100, (duration / 60) * 100);
-      const insetTop = (e.start.toZonedDateTime(timeZone).minute / 60) * 100;
-      const color = e.calendar?.color;
+  element.innerHTML = `<ul style="list-style-type: none">${cellData.events
+    .map((event) => {
       return `<li
-          style="background-color: ${color}; height: ${height}%; inset: ${insetTop}% 0 0 0; position: relative;"
-        >${e.summary}
+          style="background-color: ${event.color}; height: ${event.height}%; inset: ${event.insetTop}% 0 0 0; position: relative;"
+        >${event.summary}
         </li>`;
     })
     .join('')}</ul>`;

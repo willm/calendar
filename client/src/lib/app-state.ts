@@ -135,7 +135,7 @@ export class App {
     this.#state.calendar = await getCalendar(
       store,
       this.#state.weekIncluding,
-      Temporal.Now.instant(),
+      Temporal.Now.plainDateTimeISO(),
       Intl.DateTimeFormat().resolvedOptions()
     );
   }

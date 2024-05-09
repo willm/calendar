@@ -1,10 +1,7 @@
 {
   "name": "simplecal",
   "version": "1.0.0",
-  "workspaces": [
-    "./client",
-    "./server"
-  ],
+  "workspaces": ["./client", "./server"],
   "description": "",
   "main": "index.js",
   "prettier": "./prettierrc.json",
@@ -16,7 +13,8 @@
   "scripts": {
     "start": "npm run -w client dev & docker-compose up",
     "test": "npm run -w client test",
-    "build": "npm run -w client tsc"
+    "build": "npm run -w client tsc",
+    "test-once": "npm run -w client test-once"
   },
   "author": "",
   "license": "ISC",

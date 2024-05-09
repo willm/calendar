@@ -1,9 +1,4 @@
-import {
-  getCalendar,
-  mapCells,
-  occursWithinDay,
-  occursWithinHour,
-} from './get-calendar';
+import {getCalendar, mapCells} from './get-calendar';
 import {Temporal} from '@js-temporal/polyfill';
 import type {APIEvent, RemoteCalendar} from './model';
 import type {EventStore} from './event-db';
@@ -145,106 +140,13 @@ test('a real life week', async () => {
   expect(calendar.weekDays[4]?.cells[0]?.classes).toEqual(['current-day']);
 });
 
-test('a whole day event only occurs during 1 day', () => {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const feb24 = {
-    month: 2,
-    year: 2024,
-  };
-  const start = Temporal.ZonedDateTime.from({
-    ...feb24,
-    day: 4,
-    hour: 0,
-    minute: 0,
-    timeZone,
-  }).toInstant();
-
-  const end = Temporal.ZonedDateTime.from({
-    ...feb24,
-    day: 5,
-    hour: 0,
-    minute: 0,
-    timeZone,
-  }).toInstant();
-  const actual = occursWithinDay(
-    Temporal.ZonedDateTime.from({
-      ...feb24,
-      day: 4,
-      hour: 8,
-      minute: 0,
-      timeZone,
-    }),
-    {
-      start,
-      end,
-      uid: '123',
-      summary: 'Full day event',
-      timestamp: 123,
-    }
-  );
-  expect(actual).toBe(true);
-
-  const actual2 = occursWithinDay(
-    Temporal.ZonedDateTime.from({
-      ...feb24,
-      day: 5,
-      hour: 8,
-      minute: 0,
-      timeZone,
-    }),
-    {
-      start,
-      end,
-      uid: '123',
-      summary: 'Full day event',
-      timestamp: 123,
-    }
-  );
-  expect(actual2).toBe(false);
-});
-
-test('an event occurring after the current time', () => {
-  const within = occursWithinHour(
-    Temporal.ZonedDateTime.from({
-      year: 2024,
-      month: 3,
-      day: 21,
-      hour: 0,
-      timeZone,
-    }),
-    {
-      start: Temporal.Instant.from('2024-03-21T15:00:00Z'),
-      end: Temporal.Instant.from('2024-03-21T17:00:00Z'),
-    }
-  );
-  expect(within).toBe(false);
-});
-
-const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-test('an event ending at the current time is not included', () => {
-  const within = occursWithinHour(
-    Temporal.ZonedDateTime.from({
-      year: 2024,
-      month: 3,
-      day: 21,
-      hour: 16,
-      timeZone: 'UTC',
-    }),
-    {
-      start: Temporal.Instant.from('2024-03-21T15:00:00Z'),
-      end: Temporal.Instant.from('2024-03-21T16:00:00Z'),
-    }
-  );
-  expect(within).toBe(false);
-});
-
 test('mapping cells from a day with no events returns 24 cells', () => {
   const cells = mapCells(
     Temporal.ZonedDateTime.from({
       year: 2024,
       month: 3,
       day: 21,
-      timeZone,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
     {highlight: true, events: []},
     Intl.DateTimeFormat().resolvedOptions()

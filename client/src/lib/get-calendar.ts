@@ -3,6 +3,7 @@ import {days, months} from './constants.js';
 import {Calendar, WeekDay, Event, APIEvent, CellData} from './model';
 import type {EventStore} from './event-db';
 import {getCellSpans} from './parse-calendar/cell-spans.js';
+import {occursWithinDay, occursWithinHour} from './ranges.js';
 
 export async function getCalendar(
   db: EventStore,
@@ -112,42 +113,4 @@ export function mapCells(
     });
     return {classes, events, rowSpan: eventSpan.span};
   });
-}
-
-export function occursWithinHour(
-  currentTime: Temporal.ZonedDateTime,
-  event: Range
-): boolean {
-  const hourStart = currentTime.round({
-    smallestUnit: 'hour',
-    roundingMode: 'floor',
-  });
-  const hourEnd = hourStart.add({hours: 1});
-  return occursWithin(
-    {start: hourStart.toInstant(), end: hourEnd.toInstant()},
-    {start: event.start, end: event.end}
-  );
-}
-
-type Range = {start: Temporal.Instant; end: Temporal.Instant};
-
-function occursWithin(range: Range, query: Range): boolean {
-  const startsBeforeEnd = query.start.since(range.end).sign == -1;
-  const endsAfterStart = query.end.since(range.start).sign == 1;
-  return startsBeforeEnd && endsAfterStart;
-}
-
-export function occursWithinDay(
-  currentDay: Temporal.ZonedDateTime,
-  event: Event
-): boolean {
-  const dayStart = currentDay.round({
-    smallestUnit: 'day',
-    roundingMode: 'floor',
-  });
-  const dayEnd = dayStart.add({days: 1});
-  return occursWithin(
-    {start: dayStart.toInstant(), end: dayEnd.toInstant()},
-    {start: event.start, end: event.end}
-  );
 }

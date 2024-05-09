@@ -1,6 +1,6 @@
 import {Temporal} from '@js-temporal/polyfill';
 import {Event as Evt} from '../model';
-import {occursWithinHour} from '../get-calendar';
+import {occursWithinHour} from '../ranges';
 type Event = Pick<Evt, 'start' | 'end'>;
 
 export function getCellSpans(

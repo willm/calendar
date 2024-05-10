@@ -11,6 +11,7 @@
     "debug": "vitest --inspect-brk --pool threads --poolOptions.threads.singleThread",
     "test": "vitest",
     "test-once": "vitest --run",
+    "coverage": "vitest --coverage",
     "lint": "prettier -c ../prettierrc.json --check .",
     "format": "prettier  -c ../prettierrc.json --write .",
     "tsc": "tsc"
